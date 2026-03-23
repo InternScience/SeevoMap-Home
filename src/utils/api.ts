@@ -6,11 +6,20 @@ let cachedMap: MapData | null = null;
 export async function fetchMapData(): Promise<MapData> {
   if (cachedMap) return cachedMap;
 
-  const res = await fetch(MAP_URL);
-  if (!res.ok) throw new Error(`Failed to fetch map: ${res.status}`);
-  const data: MapData = await res.json();
-  cachedMap = data;
-  return data;
+  // Try local fallback first (works without network), then HF
+  for (const url of ["/map.json", MAP_URL]) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const data: MapData = await res.json();
+        cachedMap = data;
+        return data;
+      }
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("Failed to fetch map data from any source");
 }
 
 /**

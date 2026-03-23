@@ -4,10 +4,14 @@ export interface MapNode {
   x: number;
   y: number;
   domain: string;
-  idea: string;
+  task_name?: string;
+  method_tags?: string[];
   metric_name: string;
   metric_value: number;
-  status: "approved" | "pending" | "rejected";
+  success?: boolean;
+  source?: string;
+  idea?: string;
+  status?: "approved" | "pending" | "rejected";
 }
 
 export interface MapEdge {
