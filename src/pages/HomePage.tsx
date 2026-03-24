@@ -5,7 +5,7 @@ import CodeBlock from "../components/CodeBlock";
 const FEATURES = [
   {
     title: "Explore the Graph",
-    desc: "Navigate a living knowledge graph of 3,000+ AI research execution records. See how ideas connect across pretraining, post-training, and compression domains.",
+    desc: "Navigate a living knowledge graph of 3,073 AI research execution records. See how ideas connect across pretraining, post-training, and compression domains.",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -88,7 +88,7 @@ export default function HomePage() {
           <div className="animate-slide-up delay-200 flex justify-center gap-12 sm:gap-16 mb-12">
             <StatsCounter value={3073} label="Execution Records" />
             <StatsCounter value={13} label="Research Domains" />
-            <StatsCounter value={15260} label="Connections" />
+            <StatsCounter value={15365} label="Connections" />
           </div>
 
           {/* Install command */}

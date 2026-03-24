@@ -1,6 +1,6 @@
 # SeevoMap — AI Research Knowledge Graph
 
-> Interactive visualization and search for 3,000+ execution-grounded auto-research records.
+> Interactive visualization and search for 3,073 execution-grounded auto-research records.
 
 ## What is SeevoMap?
 
@@ -10,11 +10,13 @@ SeevoMap is the frontend for [BotResearchNet](https://huggingface.co/datasets/ak
 
 ## Data Source
 
-All data is loaded from HuggingFace at runtime:
-- **Graph data**: `akiwatanabe/seevomap-graph` (map.json, 2.7MB)
+The app prefers a bundled `public/map.json` fallback and can also fetch the
+latest graph from HuggingFace at runtime:
+- **Graph data**: `akiwatanabe/seevomap-graph` (`map.json`, currently 3,073 nodes)
 - **Search API**: `akiwatanabe/seevomap` (Gradio Space)
 
-No data is stored in this repo. The website always shows the latest graph.
+Bundling `public/map.json` keeps the graph usable even when HF fetches fail
+because of proxies, CORS, or offline development.
 
 ## Quick Start
 
@@ -32,6 +34,20 @@ docker run -p 3000:80 seevomap
 
 # Or static: npm run build → serve dist/
 ```
+
+### GitHub Pages
+
+This repo is configured for GitHub Pages deployment:
+
+1. Push the repo to `main`
+2. In GitHub repo settings, open `Pages`
+3. Set `Source` to `GitHub Actions`
+4. The workflow in `.github/workflows/deploy-pages.yml` will publish `dist/`
+
+Notes:
+- Routing uses `HashRouter`, so deep links work on static GitHub hosting.
+- The bundled `public/map.json` fallback is loaded via a relative path, so it
+  still works when the site is served from `https://<user>.github.io/<repo>/`.
 
 ## CLI & SDK
 

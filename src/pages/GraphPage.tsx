@@ -42,7 +42,7 @@ export default function GraphPage() {
       <div className="pt-16 flex items-center justify-center min-h-screen bg-bg-primary">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-2 border-emerald-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-text-secondary text-sm">Loading 3,052 nodes...</p>
+          <p className="text-text-secondary text-sm">Loading graph data...</p>
         </div>
       </div>
     );

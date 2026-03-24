@@ -2,12 +2,13 @@ import { MAP_URL, GRADIO_API } from "../config";
 import type { MapData, SearchResult, NodeDetail } from "./types";
 
 let cachedMap: MapData | null = null;
+const LOCAL_MAP_URL = `${import.meta.env.BASE_URL}map.json`;
 
 export async function fetchMapData(): Promise<MapData> {
   if (cachedMap) return cachedMap;
 
   // Try local fallback first (works without network), then HF
-  for (const url of ["/map.json", MAP_URL]) {
+  for (const url of [LOCAL_MAP_URL, MAP_URL]) {
     try {
       const res = await fetch(url);
       if (res.ok) {
