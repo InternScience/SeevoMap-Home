@@ -86,8 +86,8 @@ export default function HomePage() {
 
           {/* Stats */}
           <div className="animate-slide-up delay-200 flex justify-center gap-12 sm:gap-16 mb-12">
-            <StatsCounter value={3052} label="Execution Records" />
-            <StatsCounter value={3} label="Research Domains" />
+            <StatsCounter value={3073} label="Execution Records" />
+            <StatsCounter value={13} label="Research Domains" />
             <StatsCounter value={15260} label="Connections" />
           </div>
 
