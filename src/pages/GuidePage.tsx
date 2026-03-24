@@ -1,276 +1,87 @@
+import { useState } from "react";
 import CodeBlock from "../components/CodeBlock";
 
-const PARAMETER_GOLF_METRICS = [
-  { label: "Challenge", value: "OpenAI Parameter Golf" },
-  { label: "Featured Run", value: "c002 community" },
-  { label: "Best Compliant Score", value: "1.1978 val_bpb" },
-  { label: "Artifact Size", value: "15,646,370 bytes" },
-];
+function Section({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="border-b border-border-subtle last:border-b-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between py-5 text-left group"
+      >
+        <h2 className="text-xl font-semibold text-text-primary group-hover:text-emerald-primary transition-colors">
+          {title}
+        </h2>
+        <span className="text-text-muted text-xl transition-transform duration-200" style={{ transform: open ? "rotate(45deg)" : "none" }}>
+          +
+        </span>
+      </button>
+      {open && <div className="pb-8 prose-dark">{children}</div>}
+    </section>
+  );
+}
 
 export default function GuidePage() {
   return (
     <div className="pt-16 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose-dark">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h1 className="animate-fade-in text-3xl sm:text-4xl font-bold text-text-primary mb-3">
             Guide
           </h1>
           <p className="animate-slide-up delay-100 text-text-secondary">
-            Use the current SeevoMap CLI and SDK without guessing the API.
+            Three commands to get started. Everything else is optional.
           </p>
         </div>
 
-        <section className="animate-slide-up delay-200">
-          <h2>Quick Start</h2>
-          <p>
-            Install the package, search the graph, then inject formatted context
-            into your next agent run.
-          </p>
+        {/* ---- Quick Start (always open) ---- */}
+        <Section title="Quick Start" defaultOpen>
           <CodeBlock
-            code={`# Install from PyPI
-pip install seevomap
+            code={`pip install seevomap
 
-# Search execution-grounded experience
+# Search for related experiments
 seevomap search "optimize transformer pretraining" --top-k 5
 
-# Generate prompt-ready context
-seevomap inject "minimize bpb for compact language model" --top-k 10 > context.txt
+# Get prompt-ready context for your agent
+seevomap inject "minimize bpb for compact LM" --top-k 10 > context.txt
 
-# Inspect one node
-seevomap get node a30044c5
-
-# Check endpoint reachability + local node count
-seevomap stats`}
+# Submit your result back
+seevomap submit my_experiment.json`}
             language="bash"
           />
-        </section>
-
-        <section className="animate-slide-up delay-300">
-          <h2>Featured Example: OpenAI Parameter Golf</h2>
-          <p>
-            This walkthrough mirrors the example style used in{" "}
-            <code>weco-cli</code>: prerequisites, files, one baseline run, then
-            an optimization loop. The target is OpenAI&apos;s{" "}
-            <strong>Parameter Golf</strong> challenge: fit the artifact under
-            16MB, train in under 10 minutes, and minimize{" "}
-            <code>val_bpb</code>.
+          <p className="mt-4 text-text-secondary text-sm">
+            That's it. <code>search</code> finds similar experiments.{" "}
+            <code>inject</code> formats them for your agent's prompt.{" "}
+            <code>submit</code> contributes your result back.
           </p>
+        </Section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 not-prose my-6">
-            {PARAMETER_GOLF_METRICS.map((item) => (
-              <div
-                key={item.label}
-                className="rounded-2xl border border-white/8 bg-black/10 px-4 py-4"
-              >
-                <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-2">
-                  {item.label}
-                </p>
-                <p className="text-text-primary font-semibold">
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <h3>Prerequisites</h3>
-          <ul>
-            <li>
-              The OpenAI challenge repo cloned locally. In our current workspace
-              it lives at{" "}
-              <code>
-                /mnt/shared-storage-gpfs2/sciprismax2/zhouzhiwang/parameter-golf
-              </code>
-              .
-            </li>
-            <li>
-              <code>seevomap</code> installed via <code>pip install seevomap</code>.
-            </li>
-            <li>
-              A coding agent such as Claude Code, or a manual loop where you
-              edit <code>train_gpt.py</code> yourself.
-            </li>
-          </ul>
-
-          <h3>Files in this workflow</h3>
-          <ul>
-            <li>
-              <code>train_gpt.py</code>: the main training script you will
-              modify.
-            </li>
-            <li>
-              <code>data/cached_challenge_fineweb.py</code>: dataset bootstrap
-              helper from the OpenAI repo.
-            </li>
-            <li>
-              <code>pgolf_context.md</code>: generated by{" "}
-              <code>seevomap inject</code>; contains the transferable community
-              experience.
-            </li>
-          </ul>
-
-          <h3>1) Run a baseline once</h3>
-          <p>
-            Start from the upstream OpenAI baseline so your later improvement is
-            attributable. The OpenAI README reports the default setup landing
-            around <code>~1.2 val_bpb</code>.
-          </p>
-          <CodeBlock
-            code={`cd parameter-golf  # or /mnt/shared-storage-gpfs2/sciprismax2/zhouzhiwang/parameter-golf
-python3 data/cached_challenge_fineweb.py --variant sp1024 --train-shards 1
-
-RUN_ID=baseline_sp1024 \\
-DATA_PATH=./data/datasets/fineweb10B_sp1024/ \\
-TOKENIZER_PATH=./data/tokenizers/fineweb_1024_bpe.model \\
-VOCAB_SIZE=1024 \\
-torchrun --standalone --nproc_per_node=1 train_gpt.py`}
-            language="bash"
-          />
-
-          <h3>2) Pull community context from SeevoMap</h3>
-          <p>
-            Before changing code, search the graph and save a prompt-ready
-            context file. This is the built-in SeevoMap flow.
-          </p>
-          <CodeBlock
-            code={`seevomap search "OpenAI Parameter Golf 16MB artifact val_bpb" --top-k 5
-
-seevomap inject "OpenAI Parameter Golf: minimize val_bpb under a 16MB artifact and 10 minute training budget" --top-k 12 > pgolf_context.md`}
-            language="bash"
-          />
-          <p>
-            The featured result currently shown in SeevoMap is the compliant
-            community run <code>c002</code>: <code>1.1978 val_bpb</code>,{" "}
-            <code>15,646,370</code> artifact bytes, using{" "}
-            <code>3x MLP + mixed int6 quantization</code>.
-          </p>
-
-          <h3>3A) Claude Code workflow</h3>
-          <p>
-            Open Claude Code inside the challenge repo, hand it the generated
-            context, and force the search to stay disciplined: one change at a
-            time, always re-measure.
-          </p>
-          <CodeBlock
-            code={`claude
-
-# Then give Claude Code a prompt like:
-Read train_gpt.py and pgolf_context.md.
-You are working on OpenAI's Parameter Golf challenge.
-Goal: reduce val_bpb while keeping the artifact under 16MB.
-Start from the current baseline, propose one low-risk change only, edit the code, run the training command, and report val_bpb plus artifact size.`}
-            language="text"
-          />
-
-          <h3>3B) CLI-only / manual workflow</h3>
-          <p>
-            If you are not using Claude Code, the same loop still works. Read
-            <code>pgolf_context.md</code>, pick a single technique, edit{" "}
-            <code>train_gpt.py</code>, rerun the same training command, and
-            compare the final <code>val_bpb</code>.
-          </p>
-          <CodeBlock
-            code={`# 1. Inspect the generated context
-sed -n '1,200p' pgolf_context.md
-
-# 2. Make one change in train_gpt.py
-#    Example direction: 3x MLP or mixed int6 quantization
-
-# 3. Re-run the same baseline command and compare the final val_bpb`}
-            language="bash"
-          />
-
-          <h3>4) What result are you trying to beat?</h3>
-          <ul>
-            <li>
-              <strong>Featured compliant run:</strong> <code>c002_3xmlp_int6</code>
-            </li>
-            <li>
-              <strong>Metric:</strong> <code>val_bpb = 1.19781683</code>
-            </li>
-            <li>
-              <strong>Artifact size:</strong> <code>15,646,370 bytes</code>
-            </li>
-            <li>
-              <strong>Technique summary:</strong> 3x MLP expansion + mixed int6
-              quantization + compression
-            </li>
-          </ul>
-
-          <h3>5) Submit the result back</h3>
-          <p>
-            Once you have a run worth keeping, package it as a node and push it
-            back into the graph.
-          </p>
-          <CodeBlock
-            code={`{
-  "task": {
-    "domain": "pretraining",
-    "description": "OpenAI Parameter Golf"
-  },
-  "idea": {
-    "text": "3x MLP + mixed int6 quantization for 16MB artifact",
-    "method_tags": ["architecture", "quantization", "compression"]
-  },
-  "result": {
-    "metric_name": "val_bpb",
-    "metric_value": 1.1978,
-    "success": true
-  }
-}`}
-            language="json"
-          />
-
-          <h3>Tips</h3>
-          <ul>
-            <li>
-              Prefer one low-risk change per iteration. Stacking many
-              community-derived hyperparameter edits at once is how you get
-              unreadable failures.
-            </li>
-            <li>
-              Keep the baseline command fixed so metric changes are attributable
-              to code changes rather than evaluation drift.
-            </li>
-            <li>
-              Treat <code>1.1978</code> as the reference bar for this guide,
-              not as a claim that SeevoMap has already solved the full
-              competition.
-            </li>
-          </ul>
-        </section>
-
-        <section className="animate-slide-up delay-400">
-          <h2>CLI Reference</h2>
-
+        {/* ---- CLI Reference ---- */}
+        <Section title="CLI Reference">
           <h3>seevomap search</h3>
-          <p>
-            Search public graph results plus your own private local nodes,
-            merged and ranked by score.
-          </p>
+          <p>Semantic search across 3,000+ execution records. Returns results ranked by relevance.</p>
           <CodeBlock
-            code={`seevomap search "your query here" --top-k 10
-
-# Global option:
-#   --endpoint  Custom SeevoMap Space URL`}
+            code={`seevomap search "GNN molecular property prediction" --top-k 5`}
             language="bash"
           />
 
           <h3>seevomap inject</h3>
-          <p>
-            Format the top search hits as prompt-ready context for an LLM agent
-            or evolutionary search loop.
-          </p>
+          <p>Same search, but formatted as prompt context. Pipe into a file or directly into your agent.</p>
           <CodeBlock
-            code={`seevomap inject "improve training stability for small language models" --top-k 12 > context.txt
-
-# Then pass the file into your prompt or loop runner`}
+            code={`seevomap inject "training stability for small LMs" --top-k 12 > context.txt`}
             language="bash"
           />
 
           <h3>seevomap get</h3>
-          <p>
-            Inspect a specific node or download the latest map artifact.
-          </p>
+          <p>Inspect a single node by ID, or download the full graph map.</p>
           <CodeBlock
             code={`seevomap get node a30044c5
 seevomap get map -o map.json`}
@@ -278,36 +89,32 @@ seevomap get map -o map.json`}
           />
 
           <h3>seevomap submit</h3>
-          <p>
-            Submit one JSON node or batch submit a directory of nodes. Public
-            submissions go through review before entering the shared graph.
-          </p>
+          <p>Submit one or many experiment results. They go through review before entering the public graph.</p>
           <CodeBlock
             code={`seevomap submit experiment.json
-seevomap submit --dir ./trajectory_nodes/`}
+seevomap submit --dir ./my_experiments/`}
             language="bash"
           />
 
+          <h3>seevomap stats</h3>
+          <CodeBlock code={`seevomap stats`} language="bash" />
+
           <h3>seevomap local</h3>
-          <p>
-            Keep private nodes on your own machine. They are searched alongside
-            public results but never uploaded unless you explicitly submit them.
-          </p>
+          <p>Private nodes stored in <code>~/.seevomap/nodes/</code>. Merged into search/inject automatically, never uploaded.</p>
           <CodeBlock
             code={`seevomap local add experiment.json
 seevomap local list
-seevomap search "training stability" --top-k 10
 seevomap local remove abc12345`}
             language="bash"
           />
-        </section>
 
-        <section className="animate-slide-up delay-500">
-          <h2>Python SDK</h2>
-          <p>
-            Use SeevoMap programmatically in Python scripts, notebooks, or loop
-            runners.
+          <p className="text-text-muted text-sm mt-4">
+            All commands accept <code>--endpoint URL</code> to use a custom SeevoMap backend.
           </p>
+        </Section>
+
+        {/* ---- Python SDK ---- */}
+        <Section title="Python SDK">
           <CodeBlock
             code={`from seevomap import SeevoMap
 
@@ -315,104 +122,47 @@ svm = SeevoMap()
 
 # Search
 results = svm.search("optimize transformer pretraining", top_k=5)
-for r in results:
-    print(f"[{r.get('source')}] score={r.get('score')} {r.get('domain')}")
 
-# Inject prompt-ready context
-context = svm.inject("minimize bits-per-byte under 16MB", top_k=10)
-print(context)
+# Inject (returns formatted string)
+context = svm.inject("minimize bpb under 16MB", top_k=10)
 
-# Inspect a node and endpoint stats
-node = svm.get_node("a30044c5")
-stats = svm.stats()
-print(node.get("idea", {}).get("text", ""))
-print(stats)
-
-# Submit a result
+# Submit
 svm.submit({
-    "task": {"domain": "pretraining", "description": "Parameter Golf"},
-    "idea": {"text": "Sliding window eval for bpb measurement"},
+    "task": {"domain": "pretraining"},
+    "idea": {"text": "3x MLP + int6 quantization"},
     "result": {"metric_name": "val_bpb", "metric_value": 1.1978, "success": True},
 })`}
             language="python"
           />
 
-          <h3>Agent Integration</h3>
+          <h3>Agent Integration (3 lines)</h3>
           <CodeBlock
             code={`from seevomap import SeevoMap
 
-svm = SeevoMap()
-task = "optimize transformer pretraining for a compact language model"
-community_context = svm.inject(task, top_k=10)
-
-prompt = f"""
-You are designing the next experiment.
-
-Task:
-{task}
-
-Relevant community experience:
-{community_context}
-"""
-
-print(prompt)`}
+context = SeevoMap().inject("your task description", top_k=10)
+prompt = f"Community experience:\\n{context}\\n\\nDesign the next experiment."`}
             language="python"
           />
-        </section>
+        </Section>
 
-        <section className="animate-slide-up delay-600">
-          <h2>Contributing</h2>
-          <p>
-            SeevoMap is community-driven. Every submitted execution record makes
-            the graph more useful for the next researcher.
-          </p>
-
-          <h3>Minimum JSON schema</h3>
+        {/* ---- Contributing ---- */}
+        <Section title="Contributing">
+          <p>Every experiment you submit makes the graph more useful. Minimum 3 fields:</p>
           <CodeBlock
             code={`{
-  "task": {
-    "domain": "pretraining",
-    "description": "Compact language model optimization"
-  },
-  "idea": {
-    "text": "Sliding window evaluation with stride=64"
-  },
-  "result": {
-    "metric_name": "val_bpb",
-    "metric_value": 1.1978,
-    "success": true
-  }
+  "task": { "domain": "pretraining" },
+  "idea": { "text": "What you tried" },
+  "result": { "metric_name": "val_bpb", "metric_value": 1.1978 }
 }`}
             language="json"
           />
-          <p>
-            Better submissions also include method tags, context, and analysis
-            so others can judge whether a technique is transferable or a pitfall.
+          <p className="text-sm text-text-secondary mt-3">
+            Better submissions include <code>method_tags</code>,{" "}
+            <code>analysis</code> (why it worked/failed), and{" "}
+            <code>code_diff</code>. Failed experiments are valuable too —
+            they tell the next person what to avoid.
           </p>
-        </section>
-
-        <section className="animate-slide-up delay-[700ms]">
-          <h2>Local Mode</h2>
-          <p>
-            Local nodes live in <code>~/.seevomap/nodes/</code>. Search and
-            inject automatically merge them with public results, which is useful
-            when you want private memory before publishing.
-          </p>
-          <CodeBlock
-            code={`# Store a private node
-seevomap local add experiment.json
-
-# List what you have stored locally
-seevomap local list
-
-# Local nodes are merged into search/inject automatically
-seevomap inject "training stability for small models" --top-k 8
-
-# Remove one private node
-seevomap local remove abc12345`}
-            language="bash"
-          />
-        </section>
+        </Section>
 
         <div className="h-20" />
       </div>
