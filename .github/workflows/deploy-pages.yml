@@ -29,11 +29,14 @@ jobs:
           cache: npm
 
       - name: Validate Pages bootstrap token
-        if: ${{ secrets.PAGES_TOKEN == '' }}
+        env:
+          PAGES_TOKEN: ${{ secrets.PAGES_TOKEN }}
         run: |
-          echo "Missing required secret: PAGES_TOKEN" >&2
-          echo "Create a fine-grained or classic PAT with access to this repo and Pages, then add it as a repository secret named PAGES_TOKEN." >&2
-          exit 1
+          if [ -z "${PAGES_TOKEN}" ]; then
+            echo "Missing required secret: PAGES_TOKEN" >&2
+            echo "Create a fine-grained or classic PAT with access to this repo and Pages, then add it as a repository secret named PAGES_TOKEN." >&2
+            exit 1
+          fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
