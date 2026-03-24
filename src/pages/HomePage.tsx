@@ -61,6 +61,13 @@ const STEPS = [
   },
 ];
 
+const PARAMETER_GOLF_METRICS = [
+  { label: "Featured Run", value: "c002 community" },
+  { label: "Best Compliant Score", value: "1.1978 bpb" },
+  { label: "Artifact Size", value: "15.65 MB" },
+  { label: "Techniques", value: "3x MLP + int6" },
+];
+
 export default function HomePage() {
   return (
     <div className="pt-16">
@@ -164,6 +171,63 @@ export default function HomePage() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ──── Featured Example ───────────────────────── */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="rounded-3xl border border-border-subtle bg-bg-card/80 backdrop-blur-sm p-8 sm:p-10">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
+            <div>
+              <p className="text-cyan-primary text-sm font-semibold uppercase tracking-[0.18em] mb-3">
+                Featured Example
+              </p>
+              <h2 className="text-3xl font-bold text-text-primary mb-3">
+                OpenAI Parameter Golf
+              </h2>
+              <p className="text-text-secondary max-w-2xl leading-relaxed">
+                SeevoMap can inject execution-grounded tricks directly into a
+                real competition workflow. Our current featured run is the
+                compliant community result `c002`: 3x MLP plus mixed int6
+                quantization, reaching 1.1978 val_bpb under the 16MB limit.
+              </p>
+            </div>
+            <Link
+              to="/guide"
+              className="inline-flex items-center justify-center px-5 py-3 bg-white/5 hover:bg-white/10 text-text-primary border border-border-subtle rounded-xl transition-colors duration-200 text-sm"
+            >
+              Full Walkthrough
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {PARAMETER_GOLF_METRICS.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-2xl border border-white/8 bg-black/10 px-4 py-4"
+              >
+                <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-2">
+                  {item.label}
+                </p>
+                <p className="text-text-primary font-semibold">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <CodeBlock
+            code={`cd parameter-golf  # or /mnt/shared-storage-gpfs2/sciprismax2/zhouzhiwang/parameter-golf
+seevomap inject "OpenAI Parameter Golf: minimize val_bpb under a 16MB artifact and 10 minute training budget" --top-k 12 > pgolf_context.md
+claude`}
+            language="bash"
+          />
+          <p className="text-text-secondary text-sm mt-4 leading-relaxed">
+            Then hand <code>train_gpt.py</code> and <code>pgolf_context.md</code>{" "}
+            to Claude Code or your own loop runner, make one low-risk change,
+            rerun the training command, and compare the new <code>val_bpb</code>{" "}
+            against the 1.1978 reference.
+          </p>
         </div>
       </section>
 
