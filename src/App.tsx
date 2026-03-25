@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Navigate, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import Navbar from "./components/Navbar";
 
@@ -6,6 +6,10 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const GraphPage = lazy(() => import("./pages/GraphPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const GuidePage = lazy(() => import("./pages/GuidePage"));
+const QuickstartPage = lazy(() => import("./pages/QuickstartPage"));
+const AutoresearchPage = lazy(() => import("./pages/AutoresearchPage"));
+const ParameterGolfPage = lazy(() => import("./pages/ParameterGolfPage"));
+const ReferencePage = lazy(() => import("./pages/ReferencePage"));
 
 function LoadingFallback() {
   return (
@@ -28,7 +32,12 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/graph" element={<GraphPage />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/guide" element={<GuidePage />} />
+            <Route path="/guide" element={<Navigate to="/docs" replace />} />
+            <Route path="/docs" element={<GuidePage />} />
+            <Route path="/docs/quickstart" element={<QuickstartPage />} />
+            <Route path="/docs/integration" element={<AutoresearchPage />} />
+            <Route path="/docs/parameter-golf" element={<ParameterGolfPage />} />
+            <Route path="/docs/reference" element={<ReferencePage />} />
           </Routes>
         </Suspense>
       </div>

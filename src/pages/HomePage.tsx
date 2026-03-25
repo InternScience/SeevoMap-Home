@@ -26,15 +26,15 @@ const FEATURES = [
     linkText: "Search Records",
   },
   {
-    title: "Use the CLI",
-    desc: "Install the Python SDK and inject prior experiences directly into your AI agent's context. Turn community wisdom into better experiments.",
+    title: "Integrate the Loop",
+    desc: "Plug SeevoMap into Claude Code, manual experiment loops, or framework-level optimizers. Treat community execution data as memory for your next run.",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
       </svg>
     ),
-    link: "/guide",
-    linkText: "Read the Guide",
+    link: "/docs/integration",
+    linkText: "Open Integration Docs",
   },
 ];
 
@@ -99,10 +99,10 @@ export default function HomePage() {
               Explore the Graph
             </Link>
             <Link
-              to="/search"
+              to="/docs"
               className="px-6 py-3 bg-white/5 hover:bg-white/10 text-text-primary border border-border-subtle rounded-xl transition-colors duration-200 text-sm"
             >
-              Search Records
+              Read the Docs
             </Link>
           </div>
         </div>
@@ -270,10 +270,10 @@ Submitted successfully. Node ID: c002_3xmlp  (pending review)`}
 
           <div className="mt-6 text-center">
             <Link
-              to="/guide"
+              to="/docs/parameter-golf"
               className="inline-flex items-center justify-center px-5 py-3 bg-white/5 hover:bg-white/10 text-text-primary border border-border-subtle rounded-xl transition-colors duration-200 text-sm"
             >
-              Full Guide &rarr;
+              Full Walkthrough &rarr;
             </Link>
           </div>
         </div>

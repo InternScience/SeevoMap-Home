@@ -1,171 +1,96 @@
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import CodeBlock from "../components/CodeBlock";
+import DocsShell from "../components/DocsShell";
 
-function Section({
-  title,
-  defaultOpen = false,
-  children,
-}: {
-  title: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <section className="border-b border-border-subtle last:border-b-0">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-5 text-left group"
-      >
-        <h2 className="text-xl font-semibold text-text-primary group-hover:text-emerald-primary transition-colors">
-          {title}
-        </h2>
-        <span className="text-text-muted text-xl transition-transform duration-200" style={{ transform: open ? "rotate(45deg)" : "none" }}>
-          +
-        </span>
-      </button>
-      {open && <div className="pb-8 prose-dark">{children}</div>}
-    </section>
-  );
-}
+const QUICKSTART_SNIPPET = [
+  "pip install seevomap",
+  "",
+  "# Search for related experiments",
+  'seevomap search "optimize transformer pretraining" --top-k 5',
+  "",
+  "# Get prompt-ready context for your agent",
+  'seevomap inject "minimize bpb for compact LM" --top-k 10 > context.txt',
+  "",
+  "# Submit your result back",
+  "seevomap submit my_experiment.json",
+].join("\n");
+
+const DOC_PATHS = [
+  {
+    title: "Quickstart",
+    desc: "Prove SeevoMap works locally in five minutes: install, search, inject, submit.",
+    to: "/docs/quickstart",
+  },
+  {
+    title: "Autoresearch Integration",
+    desc: "The main path: use SeevoMap as a memory and context layer for Claude Code, manual loops, and framework integrations.",
+    to: "/docs/integration",
+  },
+  {
+    title: "Parameter Golf",
+    desc: "A concrete example anchored to the current public result and a real optimization loop.",
+    to: "/docs/parameter-golf",
+  },
+  {
+    title: "CLI / SDK Reference",
+    desc: "Exact commands and Python methods once you know which workflow you want.",
+    to: "/docs/reference",
+  },
+];
 
 export default function GuidePage() {
   return (
-    <div className="pt-16 min-h-screen">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <h1 className="animate-fade-in text-3xl sm:text-4xl font-bold text-text-primary mb-3">
-            Guide
-          </h1>
-          <p className="animate-slide-up delay-100 text-text-secondary">
-            Three commands to get started. Everything else is optional.
-          </p>
-        </div>
+    <DocsShell
+      eyebrow="Docs"
+      title="Documentation"
+      summary="SeevoMap has two stories: the short local proof that the CLI works, and the more important workflow where community execution records improve an autoresearch loop. Start with the path that matches your goal."
+    >
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {DOC_PATHS.map((item) => (
+          <Link
+            key={item.title}
+            to={item.to}
+            className="rounded-2xl border border-border-subtle bg-bg-card p-6 transition-colors hover:bg-white/5"
+          >
+            <h2 className="text-xl font-semibold text-text-primary mb-2">
+              {item.title}
+            </h2>
+            <p className="text-sm text-text-secondary leading-relaxed mb-4">
+              {item.desc}
+            </p>
+            <span className="text-sm text-cyan-primary font-medium">
+              Open &rarr;
+            </span>
+          </Link>
+        ))}
+      </section>
 
-        {/* ---- Quick Start (always open) ---- */}
-        <Section title="Quick Start" defaultOpen>
-          <CodeBlock
-            code={`pip install seevomap
+      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+        <h2 className="text-2xl font-semibold text-text-primary mb-4">
+          If you only want the shortest possible proof
+        </h2>
+        <p className="text-sm text-text-secondary leading-relaxed mb-4">
+          The CLI still matters. It is just no longer the whole story. This is
+          the minimum loop:
+        </p>
+        <CodeBlock code={QUICKSTART_SNIPPET} language="bash" />
+        <p className="mt-4 text-text-secondary text-sm leading-relaxed">
+          If your real goal is agent integration rather than trying one command
+          manually, go directly to <code>Autoresearch Integration</code>.
+        </p>
+      </section>
 
-# Search for related experiments
-seevomap search "optimize transformer pretraining" --top-k 5
-
-# Get prompt-ready context for your agent
-seevomap inject "minimize bpb for compact LM" --top-k 10 > context.txt
-
-# Submit your result back
-seevomap submit my_experiment.json`}
-            language="bash"
-          />
-          <p className="mt-4 text-text-secondary text-sm">
-            That's it. <code>search</code> finds similar experiments.{" "}
-            <code>inject</code> formats them for your agent's prompt.{" "}
-            <code>submit</code> contributes your result back.
-          </p>
-        </Section>
-
-        {/* ---- CLI Reference ---- */}
-        <Section title="CLI Reference">
-          <h3>seevomap search</h3>
-          <p>Semantic search across 3,000+ execution records. Returns results ranked by relevance.</p>
-          <CodeBlock
-            code={`seevomap search "GNN molecular property prediction" --top-k 5`}
-            language="bash"
-          />
-
-          <h3>seevomap inject</h3>
-          <p>Same search, but formatted as prompt context. Pipe into a file or directly into your agent.</p>
-          <CodeBlock
-            code={`seevomap inject "training stability for small LMs" --top-k 12 > context.txt`}
-            language="bash"
-          />
-
-          <h3>seevomap get</h3>
-          <p>Inspect a single node by ID, or download the full graph map.</p>
-          <CodeBlock
-            code={`seevomap get node a30044c5
-seevomap get map -o map.json`}
-            language="bash"
-          />
-
-          <h3>seevomap submit</h3>
-          <p>Submit one or many experiment results. They go through review before entering the public graph.</p>
-          <CodeBlock
-            code={`seevomap submit experiment.json
-seevomap submit --dir ./my_experiments/`}
-            language="bash"
-          />
-
-          <h3>seevomap stats</h3>
-          <CodeBlock code={`seevomap stats`} language="bash" />
-
-          <h3>seevomap local</h3>
-          <p>Private nodes stored in <code>~/.seevomap/nodes/</code>. Merged into search/inject automatically, never uploaded.</p>
-          <CodeBlock
-            code={`seevomap local add experiment.json
-seevomap local list
-seevomap local remove abc12345`}
-            language="bash"
-          />
-
-          <p className="text-text-muted text-sm mt-4">
-            All commands accept <code>--endpoint URL</code> to use a custom SeevoMap backend.
-          </p>
-        </Section>
-
-        {/* ---- Python SDK ---- */}
-        <Section title="Python SDK">
-          <CodeBlock
-            code={`from seevomap import SeevoMap
-
-svm = SeevoMap()
-
-# Search
-results = svm.search("optimize transformer pretraining", top_k=5)
-
-# Inject (returns formatted string)
-context = svm.inject("minimize bpb under 16MB", top_k=10)
-
-# Submit
-svm.submit({
-    "task": {"domain": "pretraining"},
-    "idea": {"text": "3x MLP + int6 quantization"},
-    "result": {"metric_name": "val_bpb", "metric_value": 1.1978, "success": True},
-})`}
-            language="python"
-          />
-
-          <h3>Agent Integration (3 lines)</h3>
-          <CodeBlock
-            code={`from seevomap import SeevoMap
-
-context = SeevoMap().inject("your task description", top_k=10)
-prompt = f"Community experience:\\n{context}\\n\\nDesign the next experiment."`}
-            language="python"
-          />
-        </Section>
-
-        {/* ---- Contributing ---- */}
-        <Section title="Contributing">
-          <p>Every experiment you submit makes the graph more useful. Minimum 3 fields:</p>
-          <CodeBlock
-            code={`{
-  "task": { "domain": "pretraining" },
-  "idea": { "text": "What you tried" },
-  "result": { "metric_name": "val_bpb", "metric_value": 1.1978 }
-}`}
-            language="json"
-          />
-          <p className="text-sm text-text-secondary mt-3">
-            Better submissions include <code>method_tags</code>,{" "}
-            <code>analysis</code> (why it worked/failed), and{" "}
-            <code>code_diff</code>. Failed experiments are valuable too —
-            they tell the next person what to avoid.
-          </p>
-        </Section>
-
-        <div className="h-20" />
-      </div>
-    </div>
+      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+        <h2 className="text-2xl font-semibold text-text-primary mb-4">
+          Recommended reading order
+        </h2>
+        <ol className="text-sm text-text-secondary leading-relaxed space-y-2 list-decimal pl-5">
+          <li>Quickstart if you want to validate installation and the basic loop.</li>
+          <li>Autoresearch Integration if you are wiring SeevoMap into an agent system.</li>
+          <li>Parameter Golf if you want one real workflow end-to-end.</li>
+          <li>Reference after you already know which workflow you want.</li>
+        </ol>
+      </section>
+    </DocsShell>
   );
 }

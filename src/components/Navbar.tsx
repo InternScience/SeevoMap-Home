@@ -5,7 +5,7 @@ const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/graph", label: "Graph" },
   { to: "/search", label: "Search" },
-  { to: "/guide", label: "Guide" },
+  { to: "/docs", label: "Docs" },
 ];
 
 export default function Navbar() {
@@ -26,7 +26,9 @@ export default function Navbar() {
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-1">
             {NAV_LINKS.map((link) => {
-              const isActive = location.pathname === link.to;
+              const isActive = link.to === "/docs"
+                ? location.pathname === "/docs" || location.pathname.startsWith("/docs/")
+                : location.pathname === link.to;
               return (
                 <Link
                   key={link.to}
@@ -68,7 +70,9 @@ export default function Navbar() {
         <div className="md:hidden border-t border-border-subtle">
           <div className="px-4 py-3 space-y-1">
             {NAV_LINKS.map((link) => {
-              const isActive = location.pathname === link.to;
+              const isActive = link.to === "/docs"
+                ? location.pathname === "/docs" || location.pathname.startsWith("/docs/")
+                : location.pathname === link.to;
               return (
                 <Link
                   key={link.to}
