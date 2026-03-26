@@ -106,15 +106,15 @@ export default function QuickstartPage() {
           </p>
         </Link>
         <Link
-          to="/docs/parameter-golf"
+          to="/docs/examples"
           className="surface-link-card section-tone-clay rounded-2xl p-6"
         >
           <h2 className="text-lg font-semibold text-text-primary mb-3">
-            Full Example Page
+            Examples
           </h2>
           <p className="text-sm text-text-secondary leading-relaxed">
-            Open the full Parameter Golf example if you want the complete public
-            case rather than the shortest setup path.
+            Open the two public examples if you want complete cases rather than
+            the shortest setup path.
           </p>
         </Link>
         <Link

@@ -61,7 +61,11 @@ export default function App() {
             <Route path="/docs" element={<GuidePage />} />
             <Route path="/docs/quickstart" element={<QuickstartPage />} />
             <Route path="/docs/integration" element={<AutoresearchPage />} />
-            <Route path="/docs/parameter-golf" element={<ParameterGolfPage />} />
+            <Route path="/docs/examples" element={<ParameterGolfPage />} />
+            <Route
+              path="/docs/parameter-golf"
+              element={<Navigate to="/docs/examples" replace />}
+            />
             <Route path="/docs/reference" element={<ReferencePage />} />
           </Routes>
         </Suspense>

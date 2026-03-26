@@ -5,7 +5,7 @@ const DOCS_LINKS = [
   { to: "/docs", label: "Docs Home" },
   { to: "/docs/quickstart", label: "Quickstart" },
   { to: "/docs/integration", label: "Autoresearch" },
-  { to: "/docs/parameter-golf", label: "Example" },
+  { to: "/docs/examples", label: "Examples" },
   { to: "/docs/reference", label: "Reference" },
 ];
 
