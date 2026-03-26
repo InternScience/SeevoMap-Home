@@ -1,6 +1,11 @@
 import { HashRouter, Navigate, Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
+import {
+  getInitialTheme,
+  THEME_STORAGE_KEY,
+  type ThemeMode,
+} from "./utils/theme";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const GraphPage = lazy(() => import("./pages/GraphPage"));
@@ -23,10 +28,30 @@ function LoadingFallback() {
 }
 
 export default function App() {
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    const initial = getInitialTheme();
+    if (typeof document !== "undefined") {
+      document.documentElement.dataset.theme = initial;
+      document.documentElement.style.colorScheme = initial;
+    }
+    return initial;
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
   return (
     <HashRouter>
-      <div className="min-h-screen bg-bg-primary">
-        <Navbar />
+      <div className="app-shell min-h-screen">
+        <Navbar
+          theme={theme}
+          onToggleTheme={() =>
+            setTheme((current) => (current === "dark" ? "light" : "dark"))
+          }
+        />
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path="/" element={<HomePage />} />

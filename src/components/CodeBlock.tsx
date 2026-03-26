@@ -16,14 +16,14 @@ export default function CodeBlock({ code, language = "bash" }: CodeBlockProps) {
   }, [code]);
 
   return (
-    <div className="relative group rounded-lg overflow-hidden border border-border-subtle">
+    <div className="code-shell relative group rounded-xl overflow-hidden">
       {/* Language badge */}
       {language && (
-        <div className="flex items-center justify-between px-4 py-2 bg-white/[0.02] border-b border-border-subtle">
-          <span className="text-xs text-text-muted font-mono">{language}</span>
+        <div className="code-shell-header flex items-center justify-between px-4 py-2">
+          <span className="text-xs font-mono">{language}</span>
           <button
             onClick={handleCopy}
-            className="text-xs text-text-muted hover:text-text-primary transition-colors flex items-center gap-1"
+            className="code-shell-copy text-xs transition-colors flex items-center gap-1"
           >
             {copied ? (
               <>
@@ -49,8 +49,8 @@ export default function CodeBlock({ code, language = "bash" }: CodeBlockProps) {
         </div>
       )}
 
-      <pre className="p-4 overflow-x-auto bg-[#080c14]">
-        <code className="text-sm font-mono text-emerald-light leading-relaxed whitespace-pre">
+      <pre className="code-shell-body p-4 overflow-x-auto">
+        <code className="code-shell-text text-sm font-mono leading-relaxed whitespace-pre">
           {code}
         </code>
       </pre>

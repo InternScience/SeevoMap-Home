@@ -13,6 +13,7 @@ const FEATURES = [
     ),
     link: "/graph",
     linkText: "Open Graph Explorer",
+    toneClass: "section-tone-sky",
   },
   {
     title: "Search Experiences",
@@ -24,6 +25,7 @@ const FEATURES = [
     ),
     link: "/search",
     linkText: "Search Records",
+    toneClass: "section-tone-clay",
   },
   {
     title: "Integrate the Loop",
@@ -35,6 +37,7 @@ const FEATURES = [
     ),
     link: "/docs/integration",
     linkText: "Open Integration Docs",
+    toneClass: "section-tone-sage",
   },
 ];
 
@@ -66,24 +69,23 @@ export default function HomePage() {
     <div className="pt-16">
       {/* ---- Hero ---------------------------------------- */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.12),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgba(6,182,212,0.06),transparent)]" />
+        <div className="absolute inset-0 hero-field" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 text-center">
           <h1 className="animate-fade-in text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6">
-            <span className="text-text-primary">S</span>
-            <span className="brand-evo">eevo</span>
+            <span className="text-text-primary">Se</span>
+            <span className="brand-evo">evo</span>
             <span className="text-text-primary">Map</span>
           </h1>
 
           <p className="animate-slide-up delay-100 text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
-            A community knowledge graph of AI research execution records.
-            Search, learn from, and inject prior experimental wisdom into your agent.
+            An evolving map of scientific research — every experiment makes the next one smarter.
+            Search execution records, inject community wisdom, accelerate discovery.
           </p>
 
           <div className="animate-slide-up delay-200 flex justify-center gap-12 sm:gap-16 mb-12">
-            <StatsCounter value={3073} label="Execution Records" />
-            <StatsCounter value={13} label="Research Domains" />
+            <StatsCounter value={4279} label="Execution Records" />
+            <StatsCounter value={19} label="Research Domains" />
             <StatsCounter value={15365} label="Connections" />
           </div>
 
@@ -94,13 +96,13 @@ export default function HomePage() {
           <div className="animate-slide-up delay-400 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/graph"
-              className="px-6 py-3 bg-emerald-primary hover:bg-emerald-dark text-white font-medium rounded-xl transition-colors duration-200 text-sm"
+              className="theme-primary-button px-6 py-3 font-medium rounded-xl transition-colors duration-200 text-sm"
             >
               Explore the Graph
             </Link>
             <Link
               to="/docs"
-              className="px-6 py-3 bg-white/5 hover:bg-white/10 text-text-primary border border-border-subtle rounded-xl transition-colors duration-200 text-sm"
+              className="theme-secondary-button px-6 py-3 rounded-xl transition-colors duration-200 text-sm"
             >
               Read the Docs
             </Link>
@@ -115,7 +117,7 @@ export default function HomePage() {
             <Link
               key={feat.title}
               to={feat.link}
-              className={`card-hover animate-slide-up delay-${(i + 1) * 100} bg-bg-card border border-border-subtle rounded-xl p-6 block`}
+              className={`card-hover surface-link-card animate-slide-up delay-${(i + 1) * 100} rounded-xl p-6 block ${feat.toneClass}`}
             >
               <div className="text-emerald-primary mb-4">{feat.icon}</div>
               <h3 className="text-lg font-semibold text-text-primary mb-2">
@@ -158,124 +160,6 @@ export default function HomePage() {
               </p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ---- Live Example: Parameter Golf ---------------- */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="rounded-3xl border border-border-subtle bg-bg-card/80 backdrop-blur-sm p-8 sm:p-10">
-          <p className="text-cyan-primary text-sm font-semibold uppercase tracking-[0.18em] mb-3">
-            Live Example
-          </p>
-          <h2 className="text-3xl font-bold text-text-primary mb-3">
-            Parameter Golf: 1.2259 &rarr; 1.1978 bpb
-          </h2>
-          <p className="text-text-secondary max-w-2xl leading-relaxed mb-8">
-            We used SeevoMap to beat the baseline on OpenAI's Parameter Golf
-            challenge. Here's what actually happened.
-          </p>
-
-          {/* Before / After metrics */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            {[
-              { label: "Baseline", value: "1.2259 bpb" },
-              { label: "With SeevoMap", value: "1.1978 bpb", highlight: true },
-              { label: "Improvement", value: "-0.0281 bpb" },
-              { label: "Model Size", value: "15.6 MB / 16 MB" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className={`rounded-2xl border px-4 py-4 ${
-                  item.highlight
-                    ? "border-emerald-primary/30 bg-emerald-primary/5"
-                    : "border-white/8 bg-black/10"
-                }`}
-              >
-                <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-2">
-                  {item.label}
-                </p>
-                <p className={`font-semibold ${item.highlight ? "text-emerald-primary" : "text-text-primary"}`}>
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Step 1: inject */}
-          <h3 className="text-lg font-semibold text-text-primary mb-3">
-            Step 1: Pull community experience
-          </h3>
-          <CodeBlock
-            code={`$ seevomap inject "minimize bpb for compact language model under 16MB" --top-k 5`}
-            language="bash"
-          />
-          <div className="mt-3 mb-6 rounded-xl bg-black/20 border border-white/5 p-4 text-sm font-mono text-text-secondary overflow-x-auto">
-            <pre className="whitespace-pre-wrap">{`## Community Experience from SeevoMap (BotResearchNet)
-
-[1] [OK] model_compression | val_bpb=1.1574 | score=0.76
-    Int6 MLP3x Sliding Window
-    Techniques: int6 post-training, 3x MLP, FP16 embed, sliding window
-
-[2] [OK] model_compression | val_bpb=1.1458 | score=0.75
-    Int6 MLP3x + SmearGate + BigramHash + OrthoInit + SWA
-    Techniques: int6 QAT, SmearGate, 3x MLP, U-Net skip
-
-[3] [OK] model_compression | val_bpb=1.1586 | score=0.76
-    10L Int6 QAT + Zstd MLP2.6x + Muon0.99
-    Techniques: int6 STE QAT, zstd-22, Muon 0.99, grad clip 0.3
-
-[4] [FAIL] model_compression | val_bpb=1.2244 | score=0.76
-    Naive Baseline — no optimizations
-
-[5] [OK] model_compression | val_bpb=1.1428 | score=0.74
-    10L Int5-MLP + BigramHash(10240) + SWA + WD=0.04`}</pre>
-          </div>
-
-          {/* Step 2: what we learned */}
-          <h3 className="text-lg font-semibold text-text-primary mb-3">
-            Step 2: Agent reads this and decides
-          </h3>
-          <div className="rounded-xl bg-black/20 border border-white/5 p-4 text-sm text-text-secondary mb-6">
-            <p className="mb-2"><strong className="text-text-primary">Pattern found:</strong> All top results use <code className="text-cyan-primary">3x MLP expansion</code> + <code className="text-cyan-primary">int6 quantization</code>.</p>
-            <p className="mb-2"><strong className="text-text-primary">Pitfall avoided:</strong> Result [4] shows naive baseline scores 1.2244. Community records confirm single-technique changes are safer than stacking 4+ changes at once.</p>
-            <p><strong className="text-text-primary">Decision:</strong> Apply 3x MLP + int6 mixed quantization (int5 MLP, int6 attention, FP16 embeddings).</p>
-          </div>
-
-          {/* Step 3: result */}
-          <h3 className="text-lg font-semibold text-text-primary mb-3">
-            Step 3: Train and measure
-          </h3>
-          <div className="rounded-xl bg-black/20 border border-white/5 p-4 text-sm font-mono text-text-secondary mb-6">
-            <pre className="whitespace-pre-wrap">{`step:1000  val_bpb:1.3706  train_loss:2.3584
-step:5000  val_bpb:1.2318  train_loss:2.0345
-step:10000 val_bpb:1.2032  train_loss:1.9901
-step:12923 val_bpb:1.1967  train_loss:1.9793  (wallclock stop)
-
-final_int8_zlib_roundtrip val_bpb:1.1978  artifact:15,646,370 bytes  [COMPLIANT]`}</pre>
-          </div>
-
-          {/* Step 4: submit */}
-          <h3 className="text-lg font-semibold text-text-primary mb-3">
-            Step 4: Submit back to the graph
-          </h3>
-          <CodeBlock
-            code={`$ seevomap submit result.json
-Submitted successfully. Node ID: c002_3xmlp  (pending review)`}
-            language="bash"
-          />
-          <p className="text-text-secondary text-sm mt-4 leading-relaxed">
-            The next researcher who searches for "parameter golf" will find this
-            result and build on it. That's the flywheel.
-          </p>
-
-          <div className="mt-6 text-center">
-            <Link
-              to="/docs/parameter-golf"
-              className="inline-flex items-center justify-center px-5 py-3 bg-white/5 hover:bg-white/10 text-text-primary border border-border-subtle rounded-xl transition-colors duration-200 text-sm"
-            >
-              Full Walkthrough &rarr;
-            </Link>
-          </div>
         </div>
       </section>
 

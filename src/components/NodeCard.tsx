@@ -31,7 +31,8 @@ interface NodeCardProps {
 }
 
 export default function NodeCard({ node, onClick }: NodeCardProps) {
-  const safeIdea = node.idea || "Untitled execution asset";
+  const safeLabel = node.label || node.idea || "Untitled";
+  const safeIdea = node.idea || "";
   const safeDomain = node.domain || "unknown";
   const safeMetricName = node.metric_name || "metric";
   const safeMetricValue =
@@ -39,13 +40,13 @@ export default function NodeCard({ node, onClick }: NodeCardProps) {
       ? node.metric_value
       : 0;
   const metricPercent = Math.min(Math.abs(safeMetricValue) * 100, 100);
-  const title = getIdeaTitle(safeIdea);
+  const title = getIdeaTitle(safeLabel);
   const idSuffix = (node.id || "unknown").slice(-6);
 
   return (
     <button
       onClick={onClick}
-      className="card-hover w-full rounded-2xl border border-white/8 bg-[#0c1322]/95 p-5 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-primary/30"
+      className="card-hover surface-card-deep w-full rounded-2xl p-5 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-primary/30"
     >
       <div className="mb-4 flex items-center justify-between gap-3">
         <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${getDomainStyle(safeDomain)}`}>
@@ -70,14 +71,14 @@ export default function NodeCard({ node, onClick }: NodeCardProps) {
         {safeIdea}
       </p>
 
-      <div className="mb-4 border-t border-white/6 pt-4">
+      <div className="mb-4 border-t border-border-subtle pt-4">
         <div className="mb-2 flex items-center justify-between text-xs">
           <span className="text-text-muted">{safeMetricName}</span>
           <span className="font-mono font-medium text-text-primary">
             {safeMetricValue.toFixed(4)}
           </span>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+        <div className="surface-track h-1.5 overflow-hidden rounded-full">
           <div
             className="h-full rounded-full bg-gradient-to-r from-cyan-primary via-emerald-primary to-cyan-light transition-all duration-500"
             style={{ width: `${metricPercent}%` }}
@@ -86,7 +87,7 @@ export default function NodeCard({ node, onClick }: NodeCardProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-xs">
-        <span className="rounded-full border border-white/8 bg-white/[0.03] px-2.5 py-1 text-text-muted">
+        <span className="surface-badge rounded-full px-2.5 py-1 text-text-muted">
           asset #{idSuffix}
         </span>
         <div className="ml-auto text-text-muted">

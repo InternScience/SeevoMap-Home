@@ -5,7 +5,7 @@ const DOCS_LINKS = [
   { to: "/docs", label: "Docs Home" },
   { to: "/docs/quickstart", label: "Quickstart" },
   { to: "/docs/integration", label: "Autoresearch" },
-  { to: "/docs/parameter-golf", label: "Parameter Golf" },
+  { to: "/docs/parameter-golf", label: "Example" },
   { to: "/docs/reference", label: "Reference" },
 ];
 
@@ -27,8 +27,7 @@ export default function DocsShell({
   return (
     <div className="pt-16 min-h-screen">
       <div className="relative overflow-hidden border-b border-border-subtle">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.12),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_60%,rgba(6,182,212,0.06),transparent)]" />
+        <div className="absolute inset-0 docs-hero-field" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
           <p className="text-cyan-primary text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] mb-3">
@@ -50,8 +49,8 @@ export default function DocsShell({
                   to={link.to}
                   className={`px-4 py-2 rounded-full text-sm border transition-colors ${
                     isActive
-                      ? "bg-emerald-primary/10 text-emerald-primary border-emerald-primary/30"
-                      : "bg-white/5 text-text-secondary border-border-subtle hover:text-text-primary hover:bg-white/10"
+                      ? "surface-pill-active text-emerald-primary"
+                      : "surface-pill text-text-secondary hover:text-text-primary"
                   }`}
                 >
                   {link.label}

@@ -2,24 +2,24 @@ import CodeBlock from "../components/CodeBlock";
 import DocsShell from "../components/DocsShell";
 
 const METRICS = [
-  { label: "Featured Run", value: "c002_3xmlp_int6" },
-  { label: "Score", value: "1.19781683 val_bpb" },
-  { label: "Artifact", value: "15,646,370 bytes" },
-  { label: "Techniques", value: "3x MLP + mixed int6" },
+  { label: "Featured Run", value: "c002_3xmlp_int6", toneClass: "section-tone-sage" },
+  { label: "Score", value: "1.19781683 val_bpb", toneClass: "section-tone-sky" },
+  { label: "Artifact", value: "15,646,370 bytes", toneClass: "section-tone-clay" },
+  { label: "Techniques", value: "3x MLP + mixed int6", toneClass: "section-tone-stone" },
 ];
 
 export default function ParameterGolfPage() {
   return (
     <DocsShell
       eyebrow="Docs / Example"
-      title="Parameter Golf"
+      title="Example: Parameter Golf"
       summary="A concrete example of SeevoMap inside an autoresearch loop: baseline, inject community context, apply one low-risk change, rerun, compare, and submit."
     >
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {METRICS.map((item) => (
           <div
             key={item.label}
-            className="rounded-2xl border border-border-subtle bg-bg-card px-5 py-5"
+            className={`surface-card rounded-2xl px-5 py-5 ${item.toneClass}`}
           >
             <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-2">
               {item.label}
@@ -29,7 +29,7 @@ export default function ParameterGolfPage() {
         ))}
       </section>
 
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+      <section className="surface-card section-tone-sage rounded-3xl p-6 sm:p-8">
         <h2 className="text-2xl font-semibold text-text-primary mb-4">
           1. Start from the upstream baseline
         </h2>
@@ -46,7 +46,7 @@ torchrun --standalone --nproc_per_node=1 train_gpt.py`}
         />
       </section>
 
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+      <section className="surface-card section-tone-sky rounded-3xl p-6 sm:p-8">
         <h2 className="text-2xl font-semibold text-text-primary mb-4">
           2. Pull community context
         </h2>
@@ -64,7 +64,7 @@ seevomap inject "OpenAI Parameter Golf: minimize val_bpb under a 16MB artifact a
         </p>
       </section>
 
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+      <section className="surface-card section-tone-clay rounded-3xl p-6 sm:p-8">
         <h2 className="text-2xl font-semibold text-text-primary mb-4">
           3. Choose a workflow
         </h2>
@@ -100,7 +100,7 @@ Start from the current baseline, propose one low-risk change only, edit the code
         </div>
       </section>
 
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+      <section className="surface-card section-tone-stone rounded-3xl p-6 sm:p-8">
         <h2 className="text-2xl font-semibold text-text-primary mb-4">
           4. Submit the result back
         </h2>

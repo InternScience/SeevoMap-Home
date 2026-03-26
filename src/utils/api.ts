@@ -1,12 +1,23 @@
 import { MAP_URL, GRADIO_API } from "../config";
-import type { MapData, SearchResult, NodeDetail, MapNode } from "./types";
+import type {
+  MapData,
+  SearchResult,
+  NodeDetail,
+  MapNode,
+  RelatedNode,
+} from "./types";
 
 let cachedMap: MapData | null = null;
 const LOCAL_MAP_URL = `${import.meta.env.BASE_URL}map.json`;
 const GRADIO_TIMEOUT_MS = 1500;
 
 function getNodeSummary(node: MapNode): string {
-  return node.idea || node.label || node.task_name || node.id;
+  // For ScivBook nodes: label = question (good title), idea = methodology (numbered steps, bad title)
+  // Prefer label over idea when label exists and isn't just the id
+  if (node.label && node.label !== node.id && !node.label.match(/^[0-9a-f]{6,}$/)) {
+    return node.label;
+  }
+  return node.idea || node.task_name || node.id;
 }
 
 function tokenize(text: string): string[] {
@@ -51,13 +62,43 @@ function scoreNode(query: string, node: MapNode): number {
 function toSearchResult(node: MapNode, score: number): SearchResult {
   return {
     id: node.id,
-    idea: getNodeSummary(node),
+    label: node.label || node.task_name || node.id,
+    idea: node.idea || node.label || "",
     domain: node.domain,
     metric_name: node.metric_name,
     metric_value: node.metric_value,
     score,
     status: node.status || (node.success ? "approved" : "pending"),
   };
+}
+
+function enrichSearchResults(
+  results: SearchResult[],
+  map: MapData,
+): SearchResult[] {
+  const nodesById = new Map(map.nodes.map((node) => [node.id, node]));
+
+  return results.map((result) => {
+    const node = nodesById.get(result.id);
+    if (!node) return result;
+
+    const label = node.label || result.label || node.task_name || node.id;
+    const remoteIdea = (result.idea || "").trim();
+    const localIdea = (node.idea || "").trim();
+    const shouldUseLocalIdea =
+      !remoteIdea ||
+      remoteIdea === result.label ||
+      remoteIdea === label;
+
+    return {
+      ...result,
+      label,
+      idea: shouldUseLocalIdea ? localIdea || remoteIdea || label : remoteIdea,
+      domain: result.domain !== "unknown" ? result.domain : node.domain,
+      metric_name: result.metric_name !== "metric" ? result.metric_name : node.metric_name,
+      status: result.status || node.status || (node.success ? "approved" : "pending"),
+    };
+  });
 }
 
 function normalizeSearchResult(raw: unknown): SearchResult | null {
@@ -98,8 +139,13 @@ function normalizeSearchResult(raw: unknown): SearchResult | null {
       (candidate) => typeof candidate === "string" && candidate.trim(),
     ) || id;
 
+  const labelStr = typeof item.label === "string" && item.label.trim() ? item.label
+    : typeof item.task_name === "string" && item.task_name.trim() ? item.task_name
+    : String(idea);
+
   return {
     id,
+    label: String(labelStr),
     idea: String(idea),
     domain,
     metric_name: metricName,
@@ -128,6 +174,60 @@ function buildOfflineAnalysis(node: MapNode): string {
   return lines.join("\n");
 }
 
+function normalizeRelatedNodeTitle(text: string): string {
+  const value = (text || "").trim();
+  if (!value) return "Untitled related node";
+  const colonIndex = value.indexOf(": ");
+  if (colonIndex !== -1) {
+    return value.slice(colonIndex + 2).trim() || value;
+  }
+  return value;
+}
+
+function parseRelatedNode(
+  raw: unknown,
+  fallback?: RelatedNode,
+): RelatedNode | null {
+  if (typeof raw === "string") {
+    if (fallback) return fallback;
+    const title = normalizeRelatedNodeTitle(raw);
+    return title ? { id: raw, title } : null;
+  }
+
+  if (!raw || typeof raw !== "object") {
+    return fallback ?? null;
+  }
+
+  const item = raw as Record<string, unknown>;
+  const id =
+    typeof item.id === "string" && item.id.trim()
+      ? item.id
+      : fallback?.id;
+  const titleCandidate =
+    typeof item.title === "string" && item.title.trim()
+      ? item.title
+      : typeof item.label === "string" && item.label.trim()
+        ? item.label
+        : typeof item.idea === "string" && item.idea.trim()
+          ? item.idea
+          : fallback?.title;
+
+  if (!id || !titleCandidate) {
+    return fallback ?? null;
+  }
+
+  const domain =
+    typeof item.domain === "string" && item.domain.trim()
+      ? item.domain
+      : fallback?.domain;
+
+  return {
+    id,
+    title: normalizeRelatedNodeTitle(titleCandidate),
+    domain,
+  };
+}
+
 async function searchNodesLocally(
   query: string,
   topK = 10,
@@ -139,6 +239,30 @@ async function searchNodesLocally(
     .sort((a, b) => b.score - a.score)
     .slice(0, topK)
     .map(({ node, score }) => toSearchResult(node, score));
+}
+
+export async function browseByDomain(
+  domainFilter: string,
+  limit = 30,
+  sourceFilter = "",
+): Promise<SearchResult[]> {
+  const map = await fetchMapData();
+  return map.nodes
+    .filter((node) => {
+      const domainMatch = (node.domain || "").toLowerCase().includes(domainFilter.toLowerCase());
+      if (!domainMatch) return false;
+      if (!sourceFilter) return true;
+      // sourceFilter: "ai4s" → source contains "ai4s", "science" → source contains "science"
+      const src = (node.source || "").toLowerCase();
+      return src.includes(sourceFilter.toLowerCase());
+    })
+    .sort((a, b) => {
+      if (a.success && !b.success) return -1;
+      if (!a.success && b.success) return 1;
+      return (b.metric_value ?? 0) - (a.metric_value ?? 0); // higher novelty first for hypotheses
+    })
+    .slice(0, limit)
+    .map((node) => toSearchResult(node, 0));
 }
 
 async function getNodeDetailLocally(id: string): Promise<NodeDetail | null> {
@@ -154,20 +278,31 @@ async function getNodeDetailLocally(id: string): Promise<NodeDetail | null> {
 
   const neighbors = neighborIds.map((neighborId) => {
     const neighbor = map.nodes.find((item) => item.id === neighborId);
-    return neighbor ? `${neighbor.task_name || neighbor.domain}: ${getNodeSummary(neighbor)}` : neighborId;
+    if (!neighbor) {
+      return { id: neighborId, title: neighborId };
+    }
+    return {
+      id: neighbor.id,
+      title: getNodeSummary(neighbor),
+      domain: neighbor.domain,
+    };
   });
 
   return {
     id: node.id,
-    idea: getNodeSummary(node),
+    idea: node.idea || getNodeSummary(node),
     domain: node.domain,
     metric_name: node.metric_name,
     metric_value: node.metric_value,
     analysis: buildOfflineAnalysis(node),
-    code_diff:
-      "Offline fallback mode only has graph metadata. Full code diff is available when the remote SeevoMap API is reachable.",
+    code_diff: "",
     status: node.status || (node.success ? "approved" : "pending"),
     neighbors,
+    source: node.source,
+    task_name: node.task_name,
+    method_tags: node.method_tags,
+    success: node.success,
+    label: node.label,
   };
 }
 
@@ -245,6 +380,7 @@ export async function searchNodes(
   topK = 10,
 ): Promise<SearchResult[]> {
   const localResults = await searchNodesLocally(query, topK);
+  const map = await fetchMapData();
 
   try {
     const raw = await callGradio<unknown[]>("ui_search", [query, topK]);
@@ -252,13 +388,17 @@ export async function searchNodes(
       const remoteResults = raw[0]
         .map(normalizeSearchResult)
         .filter((item): item is SearchResult => item !== null);
-      return remoteResults.length > 0 ? remoteResults : localResults;
+      return remoteResults.length > 0
+        ? enrichSearchResults(remoteResults, map)
+        : localResults;
     }
     if (Array.isArray(raw)) {
       const remoteResults = raw
         .map(normalizeSearchResult)
         .filter((item): item is SearchResult => item !== null);
-      return remoteResults.length > 0 ? remoteResults : localResults;
+      return remoteResults.length > 0
+        ? enrichSearchResults(remoteResults, map)
+        : localResults;
     }
   } catch {
     return localResults;
@@ -267,25 +407,63 @@ export async function searchNodes(
 }
 
 function parseNodeDetail(raw: unknown, fallback: NodeDetail | null): NodeDetail | null {
-  // raw[0] might be a JSON string — try to parse it
   let obj = raw;
   if (typeof obj === "string") {
     try { obj = JSON.parse(obj); } catch { return fallback; }
   }
   if (!obj || typeof obj !== "object") return fallback;
   const r = obj as Record<string, unknown>;
-  // Validate it has the required fields
   if (typeof r.id !== "string" || !r.id) return fallback;
+
+  // SeevoMap nodes have nested objects: task.domain, idea.text, result.metric_name, etc.
+  const task = (r.task && typeof r.task === "object" ? r.task : {}) as Record<string, unknown>;
+  const idea = (r.idea && typeof r.idea === "object" ? r.idea : {}) as Record<string, unknown>;
+  const result = (r.result && typeof r.result === "object" ? r.result : {}) as Record<string, unknown>;
+  const context = (r.context && typeof r.context === "object" ? r.context : {}) as Record<string, unknown>;
+
+  // Extract idea text: could be nested idea.text or flat r.idea (string)
+  const ideaText = typeof r.idea === "string" ? r.idea
+    : String(idea.text ?? idea.raw_text ?? r.label ?? r.task_name ?? task.name ?? r.id);
+
+  // Extract domain: nested task.domain or flat r.domain
+  const domain = String(task.domain ?? r.domain ?? "unknown");
+
+  // Extract metric: nested result.metric_name or flat r.metric_name
+  const metricName = String(result.metric_name ?? r.metric_name ?? "metric");
+  const rawMetric = result.metric_value ?? r.metric_value ?? 0;
+  const metricValue = typeof rawMetric === "number" ? rawMetric : Number(rawMetric);
+
+  // Extract method_tags: nested idea.method_tags or flat r.method_tags
+  const rawTags = idea.method_tags ?? r.method_tags;
+  const methodTags = Array.isArray(rawTags) ? rawTags.map(String) : [];
+
+  // Extract success
+  const rawSuccess = result.success ?? r.success;
+  const success = typeof rawSuccess === "boolean" ? rawSuccess : undefined;
+  const fallbackNeighbors = fallback?.neighbors ?? [];
+  const rawNeighbors = Array.isArray(r.neighbors) ? r.neighbors : [];
+  const neighbors =
+    rawNeighbors.length > 0
+      ? rawNeighbors
+          .map((neighbor, index) => parseRelatedNode(neighbor, fallbackNeighbors[index]))
+          .filter((item): item is RelatedNode => item !== null)
+      : fallbackNeighbors;
+
   return {
     id: String(r.id),
-    idea: String(r.idea ?? r.label ?? r.task_name ?? r.id),
-    domain: String(r.domain ?? "unknown"),
-    metric_name: String(r.metric_name ?? "metric"),
-    metric_value: typeof r.metric_value === "number" ? r.metric_value : Number(r.metric_value ?? 0),
+    idea: ideaText,
+    domain,
+    metric_name: metricName,
+    metric_value: Number.isFinite(metricValue) ? metricValue : 0,
     analysis: String(r.analysis ?? ""),
     code_diff: String(r.code_diff ?? ""),
     status: String(r.status ?? "pending"),
-    neighbors: Array.isArray(r.neighbors) ? r.neighbors.map(String) : [],
+    neighbors,
+    source: String(context.source ?? r.source ?? ""),
+    task_name: String(task.name ?? task.description ?? r.task_name ?? ""),
+    method_tags: methodTags,
+    success,
+    label: String(r.label ?? ""),
   };
 }
 

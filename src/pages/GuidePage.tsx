@@ -1,40 +1,30 @@
 import { Link } from "react-router-dom";
-import CodeBlock from "../components/CodeBlock";
 import DocsShell from "../components/DocsShell";
-
-const QUICKSTART_SNIPPET = [
-  "pip install seevomap",
-  "",
-  "# Search for related experiments",
-  'seevomap search "optimize transformer pretraining" --top-k 5',
-  "",
-  "# Get prompt-ready context for your agent",
-  'seevomap inject "minimize bpb for compact LM" --top-k 10 > context.txt',
-  "",
-  "# Submit your result back",
-  "seevomap submit my_experiment.json",
-].join("\n");
 
 const DOC_PATHS = [
   {
     title: "Quickstart",
-    desc: "Prove SeevoMap works locally in five minutes: install, search, inject, submit.",
+    desc: "The default first path: install the Claude Code skill, open your repo, and trigger one loop iteration.",
     to: "/docs/quickstart",
+    toneClass: "section-tone-sage",
   },
   {
     title: "Autoresearch Integration",
-    desc: "The main path: use SeevoMap as a memory and context layer for Claude Code, manual loops, and framework integrations.",
+    desc: "Choose Claude Code, Codex, or Cursor and read only the workflow for that environment.",
     to: "/docs/integration",
+    toneClass: "section-tone-sky",
   },
   {
-    title: "Parameter Golf",
-    desc: "A concrete example anchored to the current public result and a real optimization loop.",
+    title: "Example: Parameter Golf",
+    desc: "The full example page: baseline 1.2259, community c002 at 1.1978, and the c003 failure lesson.",
     to: "/docs/parameter-golf",
+    toneClass: "section-tone-clay",
   },
   {
     title: "CLI / SDK Reference",
-    desc: "Exact commands and Python methods once you know which workflow you want.",
+    desc: "Full command and SDK reference, including setup, run, local storage, and maintainer review commands.",
     to: "/docs/reference",
+    toneClass: "section-tone-stone",
   },
 ];
 
@@ -43,14 +33,14 @@ export default function GuidePage() {
     <DocsShell
       eyebrow="Docs"
       title="Documentation"
-      summary="SeevoMap has two stories: the short local proof that the CLI works, and the more important workflow where community execution records improve an autoresearch loop. Start with the path that matches your goal."
+      summary="These docs are organized as four roles: one Claude Code-first Quickstart, one environment selector for Autoresearch, one full Example page, and one complete CLI / SDK Reference."
     >
       <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {DOC_PATHS.map((item) => (
           <Link
             key={item.title}
             to={item.to}
-            className="rounded-2xl border border-border-subtle bg-bg-card p-6 transition-colors hover:bg-white/5"
+            className={`surface-link-card rounded-2xl p-6 ${item.toneClass}`}
           >
             <h2 className="text-xl font-semibold text-text-primary mb-2">
               {item.title}
@@ -65,31 +55,17 @@ export default function GuidePage() {
         ))}
       </section>
 
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+      <section className="surface-card section-tone-stone rounded-3xl p-6 sm:p-8">
         <h2 className="text-2xl font-semibold text-text-primary mb-4">
-          If you only want the shortest possible proof
+          How To Read These Docs
         </h2>
         <p className="text-sm text-text-secondary leading-relaxed mb-4">
-          The CLI still matters. It is just no longer the whole story. This is
-          the minimum loop:
+          Start with <code>Quickstart</code> if you want the default Claude
+          Code path. Then open <code>Autoresearch Integration</code> only for
+          the specific environment you actually use, or open <code>Example</code>{" "}
+          for the full public case. Treat <code>Reference</code> as the syntax
+          appendix, not as the first read.
         </p>
-        <CodeBlock code={QUICKSTART_SNIPPET} language="bash" />
-        <p className="mt-4 text-text-secondary text-sm leading-relaxed">
-          If your real goal is agent integration rather than trying one command
-          manually, go directly to <code>Autoresearch Integration</code>.
-        </p>
-      </section>
-
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-4">
-          Recommended reading order
-        </h2>
-        <ol className="text-sm text-text-secondary leading-relaxed space-y-2 list-decimal pl-5">
-          <li>Quickstart if you want to validate installation and the basic loop.</li>
-          <li>Autoresearch Integration if you are wiring SeevoMap into an agent system.</li>
-          <li>Parameter Golf if you want one real workflow end-to-end.</li>
-          <li>Reference after you already know which workflow you want.</li>
-        </ol>
       </section>
     </DocsShell>
   );

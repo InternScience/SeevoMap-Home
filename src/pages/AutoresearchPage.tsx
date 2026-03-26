@@ -1,193 +1,332 @@
+import { useState } from "react";
 import CodeBlock from "../components/CodeBlock";
 import DocsShell from "../components/DocsShell";
+import PromptGuidanceCards from "../components/PromptGuidanceCards";
+import {
+  AUTORESEARCH_HANDLES,
+  USER_REQUEST_FIELDS,
+  type GuidanceItem,
+} from "../utils/promptGuidance";
 
-const LOOP_STEPS = [
+type WorkflowKey = "claude" | "codex" | "cursor";
+
+interface WorkflowStep {
+  step: string;
+  title: string;
+  desc: string;
+  code: string;
+  language: string;
+  showPromptGuidance?: boolean;
+  handledTitle?: string;
+  guidanceIntro?: string;
+}
+
+const INTEGRATION_REQUEST_SUMMARY: GuidanceItem[] = [
   {
-    title: "Describe the task",
-    desc: "State the optimization target in plain language, not just a benchmark name.",
+    label: "Task + metric",
+    detail:
+      "Say what you want to improve and which metric decides whether the run was better or worse.",
   },
   {
-    title: "Inject context",
-    desc: "Use SeevoMap to pull related execution records and format them for the next prompt.",
+    label: "Dataset + local assets",
+    detail:
+      "Say which setup to use and what is already prepared locally, such as shards, tokenizers, checkpoints, or caches.",
   },
   {
-    title: "Run the loop",
-    desc: "Your agent or framework proposes one change, runs the experiment, and records the metric.",
+    label: "Constraint",
+    detail:
+      "State the hard limit up front, such as model size, latency, wall-clock time, or budget.",
   },
   {
-    title: "Feed the result back",
-    desc: "Package the outcome as a node so the next iteration sees both wins and failures.",
+    label: "Folder boundary",
+    detail:
+      "Tell the agent which folder or subdirectory it should stay inside, instead of leaving the edit scope ambiguous.",
   },
 ];
 
-const EXPECTATIONS = [
-  "The agent sees real prior runs before changing code.",
-  "The loop stays disciplined: one change, one measurement, one lesson.",
-  "The best result becomes part of the community graph instead of staying local only.",
+const INTEGRATION_SYSTEM_SUMMARY: GuidanceItem[] = [
+  {
+    label: "Multi-run retrieval",
+    detail:
+      "Pull several similar SeevoMap runs, not just one example, before making a recommendation.",
+  },
+  {
+    label: "Synthesis",
+    detail:
+      "Compare shared wins, disagreements, and failure patterns before deciding the next step.",
+  },
+  {
+    label: "One-change loop",
+    detail:
+      "Keep each iteration to one cautious code or config change so the eval result stays interpretable.",
+  },
+  {
+    label: "Evaluation + decision",
+    detail:
+      "Use the repo's normal eval path and end with a keep-or-discard recommendation tied to the metric.",
+  },
 ];
 
-const CLAUDE_WORKFLOW_SNIPPET = [
-  "cd your-project",
-  'seevomap inject "describe your optimization target here" --top-k 10 > context.txt',
-  "claude",
-  "",
-  "# Prompt:",
-  "Read context.txt and the current codebase.",
-  "Use the community context to propose one low-risk experiment change only.",
-  "Run the evaluation command, report the metric, and explain whether the change should be kept.",
-].join("\n");
+const WORKFLOW_OPTIONS: Array<{
+  id: WorkflowKey;
+  label: string;
+  summary: string;
+}> = [
+  {
+    id: "claude",
+    label: "Claude Code",
+    summary:
+      "Default first path. Install the skill and run the loop directly inside Claude Code.",
+  },
+  {
+    id: "codex",
+    label: "Codex",
+    summary:
+      "Native setup path for Codex if this is already your main coding environment.",
+  },
+  {
+    id: "cursor",
+    label: "Cursor",
+    summary:
+      "Rules-first integration. Keep the primary user experience short and reserve CLI for fallback.",
+  },
+];
 
-const MANUAL_LOOP_SNIPPET = [
-  'seevomap search "training stability for compact language model" --top-k 5',
-  'seevomap inject "improve training stability for compact language model" --top-k 10 > context.txt',
+const FILLED_TASK_REQUEST_LINES = [
+  "Help me improve OpenAI Parameter Golf in this repo.",
   "",
-  "# Read context.txt, make one code or config change, then rerun the same eval command.",
-  "# Compare the metric and keep a short analysis note for submission.",
-].join("\n");
+  "Use the FineWeb setup here, with the local dataset shards and tokenizer already downloaded.",
+  "Keep the final artifact under 16MB.",
+  "The goal is to improve val_bpb.",
+  "Keep code changes inside the parameter-golf folder.",
+];
 
-const WECO_INTEGRATION_SNIPPET = [
-  "weco run \\",
-  "  --source module.py \\",
-  '  --eval-command "python evaluate.py --path module.py" \\',
-  "  --metric speedup \\",
-  "  --goal maximize \\",
-  `  --additional-instructions "$(seevomap inject 'make the forward pass faster while preserving correctness')"`,
-].join("\n");
+const CLAUDE_STEPS: WorkflowStep[] = [
+  {
+    step: "Step 1",
+    title: "Install the skill",
+    desc: "Use the native SeevoMap setup path for Claude Code so the agent can treat SeevoMap as part of its default workflow.",
+    code: ["pip install seevomap", "seevomap setup claude-code"].join("\n"),
+    language: "bash",
+  },
+  {
+    step: "Step 2",
+    title: "Open your experiment repo",
+    desc: "Start Claude Code inside the repo where your training loop, logs, and history already live.",
+    code: ["cd ~/autoresearch", "claude"].join("\n"),
+    language: "bash",
+  },
+  {
+    step: "Step 3",
+    title: "Ask it like this",
+    desc: "Keep the request focused on your task. The installed skill should fetch community context, synthesize several related runs, and manage the loop logic in the background.",
+    code: [
+      "/loop Help me improve OpenAI Parameter Golf in this repo.",
+      "",
+      "Use the FineWeb setup here, with the local dataset shards and tokenizer already downloaded.",
+      "Keep the final artifact under 16MB.",
+      "The goal is to improve val_bpb.",
+      "Keep code changes inside the parameter-golf folder.",
+    ].join("\n"),
+    language: "text",
+    showPromptGuidance: true,
+    handledTitle: "What The Skill Handles",
+    guidanceIntro:
+      "Use the filled request as a model for your own task description. Tell the agent which local assets are ready and which folder to stay inside; let the SeevoMap skill handle the loop mechanics behind it.",
+  },
+];
 
-const PYTHON_LOOP_SNIPPET = [
-  "from seevomap import SeevoMap",
-  "",
-  "svm = SeevoMap()",
-  'task = "minimize val_bpb under a 16MB artifact budget"',
-  "community_context = svm.inject(task, top_k=10)",
-  "",
-  'prompt = f"""',
-  "Task:",
-  "{task}",
-  "",
-  "Relevant community experience:",
-  "{community_context}",
-  '"""',
-  "",
-  "# Feed prompt into your planner / coder / evaluator loop.",
-].join("\n");
+const CODEX_STEPS: WorkflowStep[] = [
+  {
+    step: "Step 1",
+    title: "Install the skill",
+    desc: "SeevoMap already supports a native Codex setup path, so Codex can discover the workflow guidance directly.",
+    code: ["pip install seevomap", "seevomap setup codex"].join("\n"),
+    language: "bash",
+  },
+  {
+    step: "Step 2",
+    title: "Open Codex in your repo",
+    desc: "Launch Codex from the repo that owns the experiment loop and evaluation command.",
+    code: ["cd ~/autoresearch", "codex"].join("\n"),
+    language: "bash",
+  },
+  {
+    step: "Step 3",
+    title: "Ask it like this",
+    desc: "Use a filled example instead of an abstract template. The installed Codex skill should load SeevoMap context, synthesize several related runs, and keep the iteration disciplined.",
+    code: FILLED_TASK_REQUEST_LINES.join("\n"),
+    language: "text",
+    showPromptGuidance: true,
+    handledTitle: "What The Skill Handles",
+    guidanceIntro:
+      "Keep the request about the task, not about internal loop steps. Tell Codex which local assets are ready and which folder it should edit; let the skill take care of the generic SeevoMap workflow.",
+  },
+];
+
+const CURSOR_TRIGGER = FILLED_TASK_REQUEST_LINES.join("\n");
+
+const CURSOR_STEPS: WorkflowStep[] = [
+  {
+    step: "Step 1",
+    title: "Encode the contract in project instructions",
+    desc: "Cursor's official model is Rules plus tool integrations, not a SeevoMap-specific setup command. Put the generic loop behavior into repo rules so the user can keep requests short.",
+    code: [
+      "# SeevoMap Workflow",
+      "",
+      "- Before proposing a change, pull several similar experiments from SeevoMap.",
+      "- Synthesize the strongest shared signals, disagreements, and failure patterns.",
+      "- Keep each loop to one small change only.",
+      "- Keep code changes inside the user-specified folder or subdirectory.",
+      "- Use the repo's normal evaluation command to judge the result.",
+      "- Finish with the updated metric and a keep-or-discard decision.",
+    ].join("\n"),
+    language: "markdown",
+  },
+  {
+    step: "Step 2",
+    title: "Ask it like this",
+    desc: "Once the rule is installed, keep the user request short and task-focused. Cursor Agent should read the rule, synthesize several related runs, and handle the generic SeevoMap loop behind the scenes.",
+    code: CURSOR_TRIGGER,
+    language: "text",
+    showPromptGuidance: true,
+    handledTitle: "What The Rules Handle",
+    guidanceIntro:
+      "Cursor should work the same way: you describe the task, including local assets and the folder boundary, while the project rule carries the SeevoMap workflow.",
+  },
+];
+
+const CURSOR_FALLBACK_COMMAND =
+  'seevomap inject "OpenAI Parameter Golf: minimize val_bpb under a 16MB artifact and 10 minute training budget" --top-k 12 > pgolf_context.md';
+
+function WorkflowStepCards({ steps }: { steps: WorkflowStep[] }) {
+  const toneClasses = [
+    "section-tone-sage",
+    "section-tone-sky",
+    "section-tone-clay",
+    "section-tone-stone",
+  ];
+
+  return (
+    <div className="space-y-4">
+      {steps.map((step, index) => (
+        <div
+          key={`${step.step}-${step.title}`}
+          className={`surface-card-deep rounded-2xl p-5 ${toneClasses[index % toneClasses.length]}`}
+        >
+          <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-2">
+            {step.step}
+          </p>
+          <h3 className="text-lg font-semibold text-text-primary mb-2">
+            {step.title}
+          </h3>
+          <p className="text-sm text-text-secondary leading-relaxed mb-4 max-w-3xl">
+            {step.desc}
+          </p>
+          <CodeBlock code={step.code} language={step.language} />
+          {step.showPromptGuidance ? (
+            <PromptGuidanceCards
+              intro={step.guidanceIntro}
+              userItems={USER_REQUEST_FIELDS}
+              handledItems={AUTORESEARCH_HANDLES}
+              handledTitle={step.handledTitle}
+            />
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function AutoresearchPage() {
+  const [activeWorkflow, setActiveWorkflow] = useState<WorkflowKey>("claude");
+
   return (
     <DocsShell
       eyebrow="Docs / Autoresearch"
       title="Autoresearch Integration"
-      summary="SeevoMap is not just a pip package. It is a memory and context layer for autoresearch systems: agent IDEs, manual experiment loops, and framework-level optimizers."
+      summary="Choose the environment you actually use. This page explains how SeevoMap becomes a default part of each autoresearch iteration in Claude Code, Codex, or Cursor."
     >
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+      <section className="surface-card section-tone-stone rounded-3xl p-6 sm:p-8">
         <h2 className="text-2xl font-semibold text-text-primary mb-4">
-          Where SeevoMap fits in the loop
+          Integration Contract
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {LOOP_STEPS.map((step) => (
-            <div
-              key={step.title}
-              className="rounded-2xl border border-white/8 bg-black/10 px-4 py-4"
-            >
-              <h3 className="text-text-primary font-semibold mb-2">
-                {step.title}
-              </h3>
-              <p className="text-sm text-text-secondary leading-relaxed">
-                {step.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-        <CodeBlock
-          code={`task description
-  -> seevomap inject
-  -> agent / planner
-  -> experiment run
-  -> metric + analysis
-  -> seevomap submit`}
-          language="text"
+        <p className="text-sm text-text-secondary leading-relaxed mb-5 max-w-3xl">
+          Keep this section short. The user should describe the task, local
+          setup, and edit boundary; the environment should handle multi-run
+          retrieval, synthesis, and the loop mechanics in the background.
+        </p>
+        <PromptGuidanceCards
+          eyebrow="At A Glance"
+          intro="This is the whole contract. The page should not make the user read an internal process diagram before they can pick an environment."
+          userItems={INTEGRATION_REQUEST_SUMMARY}
+          handledItems={INTEGRATION_SYSTEM_SUMMARY}
+          handledTitle="What The Environment Handles"
         />
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-border-subtle bg-bg-card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-3">
-            Prerequisites
-          </h2>
-          <ul className="text-sm text-text-secondary leading-relaxed space-y-2 list-disc pl-5">
-            <li><code>seevomap</code> installed locally.</li>
-            <li>Your target repo cloned and runnable.</li>
-            <li>One agent or loop environment ready to consume prompt context.</li>
-          </ul>
+      <section className="surface-card section-tone-clay rounded-3xl p-6 sm:p-8">
+        <h2 className="text-2xl font-semibold text-text-primary mb-4">
+          Choose Your Environment
+        </h2>
+        <p className="text-sm text-text-secondary leading-relaxed mb-5 max-w-3xl">
+          Start with Claude Code unless you already have a strong reason to use
+          another environment.
+        </p>
+        <div className="flex flex-wrap gap-3 mb-6">
+          {WORKFLOW_OPTIONS.map((option) => {
+            const isActive = option.id === activeWorkflow;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setActiveWorkflow(option.id)}
+                className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                  isActive
+                    ? "surface-pill-active text-emerald-primary"
+                    : "surface-pill text-text-secondary hover:text-text-primary"
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
         </div>
-        <div className="rounded-2xl border border-border-subtle bg-bg-card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-3">
-            What to expect
-          </h2>
-          <ul className="text-sm text-text-secondary leading-relaxed space-y-2 list-disc pl-5">
-            {EXPECTATIONS.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
+        <div className="surface-card-deep rounded-2xl p-5">
+          <h3 className="text-xl font-semibold text-text-primary mb-2">
+            {
+              WORKFLOW_OPTIONS.find((option) => option.id === activeWorkflow)
+                ?.label
+            }
+          </h3>
+          <p className="text-sm text-text-secondary leading-relaxed mb-5 max-w-3xl">
+            {
+              WORKFLOW_OPTIONS.find((option) => option.id === activeWorkflow)
+                ?.summary
+            }
+          </p>
 
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-4">
-          Workflow 1: Claude Code
-        </h2>
-        <p className="text-sm text-text-secondary leading-relaxed mb-4">
-          This is the cleanest path when you want an agent IDE to read context,
-          touch code, run one experiment, and report the result.
-        </p>
-        <CodeBlock code={CLAUDE_WORKFLOW_SNIPPET} language="bash" />
-      </section>
-
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-4">
-          Workflow 2: CLI / Manual Loop
-        </h2>
-        <p className="text-sm text-text-secondary leading-relaxed mb-4">
-          Use this when you are running experiments directly from the terminal
-          and want SeevoMap as a planning aid rather than an IDE integration.
-        </p>
-        <CodeBlock code={MANUAL_LOOP_SNIPPET} language="bash" />
-      </section>
-
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
-        <h2 className="text-2xl font-semibold text-text-primary mb-4">
-          Workflow 3: Framework Integration
-        </h2>
-        <p className="text-sm text-text-secondary leading-relaxed mb-5">
-          This is the path that matters most for autoresearch systems. SeevoMap
-          becomes one more operator in the loop: fetch memory before proposing
-          the next change.
-        </p>
-
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary mb-3">
-              Weco-style CLI integration
-            </h3>
-            <CodeBlock code={WECO_INTEGRATION_SNIPPET} language="bash" />
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary mb-3">
-              Python loop runner integration
-            </h3>
-            <CodeBlock code={PYTHON_LOOP_SNIPPET} language="python" />
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary mb-3">
-              Planner / evaluator pipeline
-            </h3>
-            <CodeBlock
-              code={`plan_task -> seevomap.inject(task) -> propose_change -> run_eval -> analyze_result -> seevomap.submit(result)`}
-              language="text"
-            />
-          </div>
+          {activeWorkflow === "claude" && <WorkflowStepCards steps={CLAUDE_STEPS} />}
+          {activeWorkflow === "codex" && <WorkflowStepCards steps={CODEX_STEPS} />}
+          {activeWorkflow === "cursor" && (
+            <div className="space-y-6">
+              <WorkflowStepCards steps={CURSOR_STEPS} />
+              <div className="surface-card section-tone-sky rounded-2xl p-5">
+                <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-2">
+                  Optional Fallback
+                </p>
+                <h4 className="text-lg font-semibold text-text-primary mb-2">
+                  Pre-generate a context file only when automation is unavailable
+                </h4>
+                <p className="text-sm text-text-secondary leading-relaxed mb-4 max-w-3xl">
+                  If your Cursor setup cannot call the CLI by itself, generate a
+                  prompt-ready file from the terminal and point Cursor Agent at
+                  that file. This is the backup path, not the default story.
+                </p>
+                <CodeBlock code={CURSOR_FALLBACK_COMMAND} language="bash" />
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </DocsShell>

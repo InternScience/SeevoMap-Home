@@ -11,7 +11,8 @@ export interface MapNode {
   success?: boolean;
   source?: string;
   idea?: string;
-  status?: "approved" | "pending" | "rejected";
+  status?: "approved" | "pending" | "rejected" | "hypothesis";
+  model?: string;
 }
 
 export interface MapEdge {
@@ -27,12 +28,19 @@ export interface MapData {
 
 export interface SearchResult {
   id: string;
-  idea: string;
+  label: string;   // title: question (ScivBook) or task description (AI Core)
+  idea: string;     // content: methodology (ScivBook) or [Experiment]... (AI Core)
   domain: string;
   metric_name: string;
   metric_value: number;
   score: number;
   status: string;
+}
+
+export interface RelatedNode {
+  id: string;
+  title: string;
+  domain?: string;
 }
 
 export interface NodeDetail {
@@ -44,5 +52,11 @@ export interface NodeDetail {
   analysis: string;
   code_diff: string;
   status: string;
-  neighbors: string[];
+  neighbors: RelatedNode[];
+  // enriched fields
+  source?: string;
+  task_name?: string;
+  method_tags?: string[];
+  success?: boolean;
+  label?: string;
 }

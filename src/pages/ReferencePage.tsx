@@ -1,75 +1,88 @@
 import CodeBlock from "../components/CodeBlock";
 import DocsShell from "../components/DocsShell";
 
+const CLI_COMMANDS = [
+  {
+    title: "Global endpoint override",
+    desc: "Point the CLI at a custom SeevoMap deployment instead of the default hosted endpoint.",
+    code: 'seevomap --endpoint https://your-space.hf.space search "your query here"',
+  },
+  {
+    title: "seevomap search",
+    desc: "Search related execution records for a task or technique.",
+    code: 'seevomap search "your query here" --top-k 10',
+  },
+  {
+    title: "seevomap inject",
+    desc: "Generate prompt-ready context for an agent or experiment loop.",
+    code: 'seevomap inject "improve training stability for small language models" --top-k 12 > context.txt',
+  },
+  {
+    title: "seevomap get",
+    desc: "Inspect one node or download the full map metadata.",
+    code: `seevomap get node a30044c5
+seevomap get map -o map.json`,
+  },
+  {
+    title: "seevomap stats",
+    desc: "Print graph statistics from the current endpoint.",
+    code: "seevomap stats",
+  },
+  {
+    title: "seevomap submit",
+    desc: "Submit one experiment node or batch submit a directory of JSON nodes.",
+    code: `seevomap submit experiment.json
+seevomap submit --dir ./trajectory_nodes/`,
+  },
+  {
+    title: "seevomap local",
+    desc: "Manage private local nodes that should not be uploaded.",
+    code: `seevomap local add experiment.json
+seevomap local list
+seevomap local remove abc12345`,
+  },
+  {
+    title: "seevomap setup",
+    desc: "Install the SeevoMap skill into a supported agent tool.",
+    code: `seevomap setup claude-code
+seevomap setup codex`,
+  },
+  {
+    title: "seevomap review",
+    desc: "Maintainer-only commands for inspecting and resolving pending submissions.",
+    code: `seevomap review --pending --secret "$REVIEW_SECRET"
+seevomap review --approve abc12345 --secret "$REVIEW_SECRET"
+seevomap review --reject abc12345 --secret "$REVIEW_SECRET"`,
+  },
+];
+
 export default function ReferencePage() {
   return (
     <DocsShell
       eyebrow="Docs / Reference"
       title="CLI and SDK Reference"
-      summary="Exact commands and method calls. This page is supporting documentation for the workflow pages, not the primary narrative of the product."
+      summary="Complete CLI and SDK reference. This page is supporting documentation for the workflow pages, not the primary narrative of the product."
     >
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+      <section className="surface-card section-tone-stone rounded-3xl p-6 sm:p-8">
         <h2 className="text-2xl font-semibold text-text-primary mb-5">
           CLI
         </h2>
         <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary mb-3">
-              seevomap search
-            </h3>
-            <CodeBlock
-              code={`seevomap search "your query here" --top-k 10`}
-              language="bash"
-            />
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary mb-3">
-              seevomap inject
-            </h3>
-            <CodeBlock
-              code={`seevomap inject "improve training stability for small language models" --top-k 12 > context.txt`}
-              language="bash"
-            />
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary mb-3">
-              seevomap get
-            </h3>
-            <CodeBlock
-              code={`seevomap get node a30044c5
-seevomap get map -o map.json`}
-              language="bash"
-            />
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary mb-3">
-              seevomap submit
-            </h3>
-            <CodeBlock
-              code={`seevomap submit experiment.json
-seevomap submit --dir ./trajectory_nodes/`}
-              language="bash"
-            />
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary mb-3">
-              seevomap local
-            </h3>
-            <CodeBlock
-              code={`seevomap local add experiment.json
-seevomap local list
-seevomap local remove abc12345`}
-              language="bash"
-            />
-          </div>
+          {CLI_COMMANDS.map((command) => (
+            <div key={command.title}>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                {command.title}
+              </h3>
+              <p className="text-sm text-text-secondary leading-relaxed mb-3">
+                {command.desc}
+              </p>
+              <CodeBlock code={command.code} language="bash" />
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="rounded-3xl border border-border-subtle bg-bg-card p-6 sm:p-8">
+      <section className="surface-card section-tone-sage rounded-3xl p-6 sm:p-8">
         <h2 className="text-2xl font-semibold text-text-primary mb-5">
           Python SDK
         </h2>

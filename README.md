@@ -22,8 +22,14 @@ because of proxies, CORS, or offline development.
 
 ```bash
 npm install
-npm run dev
+npm run dev:local
+npm run build
 ```
+
+Local preview convention:
+- Use `npm run dev:local` for frontend work.
+- The dev server is expected to run on port `3456` so changes can be checked
+  immediately before any GitHub push.
 
 ## Deploy
 
@@ -39,15 +45,24 @@ docker run -p 3000:80 seevomap
 
 This repo is configured for GitHub Pages deployment:
 
-1. Push the repo to `main`
-2. In GitHub repo settings, open `Pages`
-3. Set `Source` to `GitHub Actions`
-4. The workflow in `.github/workflows/deploy-pages.yml` will publish `dist/`
+1. Make and test changes locally first
+2. Run `npm run build` before claiming the site is ready
+3. Push `docs-autoresearch-preview` if you want a preview deployment
+4. Push or merge to `main` when you want the production site updated
+5. In GitHub repo settings, set `Pages` source to `GitHub Actions`
 
 Notes:
 - Routing uses `HashRouter`, so deep links work on static GitHub hosting.
 - The bundled `public/map.json` fallback is loaded via a relative path, so it
   still works when the site is served from `https://<user>.github.io/<repo>/`.
+- During frontend work, rerun the local preview first and check port `3456`
+  before treating the change as ready.
+- Production deploys are triggered by `.github/workflows/deploy-pages.yml` on
+  pushes to `main`.
+- Preview deploys are triggered by `.github/workflows/preview-pages.yml` on
+  pushes to `docs-autoresearch-preview`.
+- The intended workflow is local preview first, GitHub preview second,
+  production deploy last.
 
 ## CLI & SDK
 

@@ -2,6 +2,17 @@ import { useEffect, useState, useCallback } from "react";
 import { fetchMapData } from "../utils/api";
 import type { MapData, MapNode } from "../utils/types";
 import GraphVisualization from "../components/GraphVisualization";
+import {
+  getGraphDomainColor,
+  getGraphDomainTint,
+  getGraphDomainBorder,
+} from "../utils/graphPalette";
+
+const DOMAIN_GROUPS: { label: string; domains: string[] }[] = [
+  { label: "AI Core", domains: ["pretraining", "posttraining", "model_compression"] },
+  { label: "AI for Science", domains: ["astronomy", "energy_systems", "earth_science", "materials_science", "neuroscience"] },
+  { label: "Science", domains: ["chemistry", "life_sciences", "physics", "mathematics", "medicine", "earth_space", "engineering", "economics"] },
+];
 
 export default function GraphPage() {
   const [mapData, setMapData] = useState<MapData | null>(null);
@@ -11,12 +22,13 @@ export default function GraphPage() {
   const [allDomains, setAllDomains] = useState<string[]>([]);
   const [enabledDomains, setEnabledDomains] = useState<Set<string>>(new Set());
   const [selectedNode, setSelectedNode] = useState<MapNode | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     fetchMapData()
       .then((data) => {
         setMapData(data);
-        const domains = [...new Set(data.nodes.map((n) => n.domain))].sort();
+        const domains = [...new Set(data.nodes.map((node) => node.domain))].sort();
         setAllDomains(domains);
         setEnabledDomains(new Set(domains));
       })
@@ -29,6 +41,18 @@ export default function GraphPage() {
       const next = new Set(prev);
       if (next.has(domain)) next.delete(domain);
       else next.add(domain);
+      return next;
+    });
+  }, []);
+
+  const toggleGroup = useCallback((domains: string[]) => {
+    setEnabledDomains((prev) => {
+      const next = new Set(prev);
+      const allEnabled = domains.every((domain) => next.has(domain));
+      for (const domain of domains) {
+        if (allEnabled) next.delete(domain);
+        else next.add(domain);
+      }
       return next;
     });
   }, []);
@@ -59,156 +83,314 @@ export default function GraphPage() {
     );
   }
 
-  const filteredCount = mapData.nodes.filter((n) => enabledDomains.has(n.domain)).length;
-  const DOMAIN_COLORS: Record<string, string> = {
-    pretraining: "#3B82F6",
-    posttraining: "#EF4444",
-    model_compression: "#F59E0B",
-  };
+  const filteredCount = mapData.nodes.filter((node) => enabledDomains.has(node.domain)).length;
+  const enabledGroupCount = DOMAIN_GROUPS.flatMap((group) => group.domains)
+    .filter((domain) => enabledDomains.has(domain)).length;
+
+  const groupedDomains = DOMAIN_GROUPS.map((group) => ({
+    ...group,
+    domains: group.domains.filter((domain) => allDomains.includes(domain)),
+  })).filter((group) => group.domains.length > 0);
+
+  const knownDomains = new Set(DOMAIN_GROUPS.flatMap((group) => group.domains));
+  const ungrouped = allDomains.filter((domain) => !knownDomains.has(domain));
+  if (ungrouped.length > 0) {
+    groupedDomains.push({ label: "Other", domains: ungrouped });
+  }
+
+  const graphHeight = typeof window !== "undefined" ? window.innerHeight - 64 : 900;
 
   return (
     <div className="pt-16 relative" style={{ height: "100vh" }}>
-      {/* Graph canvas */}
       <div className="absolute inset-0 pt-16">
         <GraphVisualization
           data={mapData}
-          height={window.innerHeight - 64}
+          height={graphHeight}
           onNodeClick={handleNodeClick}
           domainFilter={enabledDomains}
         />
       </div>
 
-      {/* Left filter panel */}
-      <div className="absolute top-20 left-4 z-10 glass rounded-xl p-4 w-60 animate-fade-in">
-        <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wider mb-3">Domains</h3>
-        <div className="space-y-2.5 mb-4">
-          {allDomains.map((domain) => (
-            <label key={domain} className="flex items-center gap-2.5 text-sm cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={enabledDomains.has(domain)}
-                onChange={() => toggleDomain(domain)}
-                className="rounded border-border-subtle bg-bg-primary text-emerald-primary focus:ring-emerald-primary/30 focus:ring-offset-0 w-4 h-4"
-              />
-              <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: DOMAIN_COLORS[domain] || "#6B7280" }}
-              />
-              <span className="text-text-secondary group-hover:text-text-primary transition-colors truncate">
-                {domain}
-              </span>
-              <span className="text-text-muted text-xs ml-auto font-mono">
-                {mapData.nodes.filter((n) => n.domain === domain).length}
-              </span>
-            </label>
-          ))}
-        </div>
-        <div className="border-t border-white/10 pt-3 space-y-1.5">
-          <div className="flex justify-between text-xs">
-            <span className="text-text-muted">Showing</span>
-            <span className="text-text-primary font-mono">{filteredCount.toLocaleString()} nodes</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-text-muted">Connections</span>
-            <span className="text-text-primary font-mono">{mapData.edges.length.toLocaleString()}</span>
+      <div className="absolute top-20 left-4 z-20 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          className="graph-ui-button inline-flex items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium"
+        >
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-amber-primary/12 text-amber-primary">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 6h16M7 12h10M10 18h4" />
+            </svg>
+          </span>
+          <span className="flex flex-col items-start leading-tight">
+            <span>Domains</span>
+            <span className="text-[11px] font-normal text-text-muted">
+              {enabledDomains.size}/{allDomains.length} enabled
+            </span>
+          </span>
+        </button>
+
+        <div className="graph-ui-panel rounded-full px-4 py-2.5">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-1">
+            View
+          </p>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-text-primary font-medium">
+              {filteredCount.toLocaleString()} visible
+            </span>
+            <span className="text-text-muted">
+              {enabledGroupCount} core filters
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Node detail panel (from map.json data, no API call) */}
-      {selectedNode && (
+      {drawerOpen ? (
         <>
-          <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={() => setSelectedNode(null)} />
           <div
-            className="fixed top-0 right-0 h-full w-full max-w-lg z-50 bg-bg-card border-l border-border-subtle overflow-y-auto"
-            style={{ animation: "slide-in-right 0.3s ease-out" }}
-          >
-            <button
-              onClick={() => setSelectedNode(null)}
-              className="absolute top-4 right-4 p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors z-10"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <div className="p-6 pt-14 space-y-5">
-              {/* Domain + Success */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span
-                  className="text-xs font-semibold px-3 py-1 rounded-full border"
-                  style={{
-                    color: DOMAIN_COLORS[selectedNode.domain] || "#9CA3AF",
-                    borderColor: (DOMAIN_COLORS[selectedNode.domain] || "#9CA3AF") + "40",
-                    backgroundColor: (DOMAIN_COLORS[selectedNode.domain] || "#9CA3AF") + "15",
-                  }}
-                >
-                  {selectedNode.domain}
-                </span>
-                {selectedNode.success !== undefined && (
-                  <span className={`text-xs px-2.5 py-1 rounded-full ${selectedNode.success ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-red-500/15 text-red-400 border border-red-500/20"}`}>
-                    {selectedNode.success ? "success" : "failed"}
-                  </span>
-                )}
-                <span className="text-[10px] text-text-muted font-mono ml-auto">ID: {selectedNode.id}</span>
-              </div>
-
-              {/* Idea / Label */}
+            className="fixed inset-0 z-30"
+            style={{ backgroundColor: "var(--color-overlay)" }}
+            onClick={() => setDrawerOpen(false)}
+          />
+          <aside className="graph-ui-drawer fixed left-4 top-20 z-40 w-[320px] max-h-[calc(100vh-104px)] overflow-y-auto rounded-3xl p-5">
+            <div className="flex items-start justify-between gap-3 mb-5">
               <div>
-                <h3 className="text-xs uppercase tracking-wider text-text-muted mb-2">Experiment</h3>
-                <p className="text-text-primary leading-relaxed text-sm">
-                  {(selectedNode.label || "").replace("[Experiment] ", "")}
+                <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted mb-2">
+                  Domain Drawer
+                </p>
+                <h2 className="text-xl font-semibold text-text-primary mb-2">
+                  Shape the graph view
+                </h2>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  Keep the graph clean by opening filters only when you need them.
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                className="graph-ui-button rounded-full p-2 text-text-muted hover:text-text-primary"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
-              {/* Metric */}
-              <div>
-                <h3 className="text-xs uppercase tracking-wider text-text-muted mb-2">Result</h3>
-                <div className="bg-bg-primary rounded-lg p-4 border border-border-subtle">
-                  <div className="flex justify-between items-center">
-                    <span className="text-text-secondary text-sm">{selectedNode.metric_name}</span>
-                    <span className="text-text-primary font-mono font-bold text-lg">
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div className="graph-ui-stat rounded-2xl px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-2">
+                  Showing
+                </p>
+                <p className="text-lg font-semibold text-text-primary">
+                  {filteredCount.toLocaleString()}
+                </p>
+              </div>
+              <div className="graph-ui-stat rounded-2xl px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-2">
+                  Total
+                </p>
+                <p className="text-lg font-semibold text-text-primary">
+                  {mapData.nodes.length.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {groupedDomains.map((group) => {
+                const groupCount = group.domains.reduce(
+                  (sum, domain) => sum + mapData.nodes.filter((node) => node.domain === domain).length,
+                  0,
+                );
+                const allEnabled = group.domains.every((domain) => enabledDomains.has(domain));
+
+                return (
+                  <section key={group.label} className="surface-note rounded-2xl p-4">
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.domains)}
+                      className="w-full flex items-center justify-between text-left mb-3"
+                    >
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-1">
+                          {group.label}
+                        </p>
+                        <p className="text-sm text-text-primary">
+                          {groupCount.toLocaleString()} nodes
+                        </p>
+                      </div>
+                      <span className="graph-ui-chip rounded-full px-3 py-1 text-xs text-text-secondary">
+                        {allEnabled ? "hide group" : "show group"}
+                      </span>
+                    </button>
+
+                    <div className="space-y-2">
+                      {group.domains.map((domain) => {
+                        const count = mapData.nodes.filter((node) => node.domain === domain).length;
+                        const checked = enabledDomains.has(domain);
+                        return (
+                          <label
+                            key={domain}
+                            className="graph-ui-chip flex items-center gap-3 rounded-2xl px-3 py-2.5 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleDomain(domain)}
+                              className="rounded border-border-subtle bg-bg-primary text-amber-primary focus:ring-amber-primary/30 focus:ring-offset-0 w-3.5 h-3.5"
+                            />
+                            <span
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: getGraphDomainColor(domain) }}
+                            />
+                            <span className="text-sm text-text-secondary flex-1 truncate">
+                              {domain.replace(/_/g, " ")}
+                            </span>
+                            <span className="text-[11px] text-text-muted font-mono">
+                              {count}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </aside>
+        </>
+      ) : null}
+
+      {selectedNode ? (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            style={{ backgroundColor: "var(--color-overlay)" }}
+            onClick={() => setSelectedNode(null)}
+          />
+          <aside className="graph-ui-drawer fixed right-4 top-20 bottom-4 z-50 w-full max-w-[420px] rounded-3xl overflow-y-auto">
+            <div className="sticky top-0 z-10 border-b border-border-subtle px-6 py-5 backdrop-blur-sm" style={{ backgroundColor: "var(--graph-ui-bg-strong)" }}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-3">
+                    <span
+                      className="rounded-full border px-3 py-1 text-xs font-semibold"
+                      style={{
+                        color: getGraphDomainColor(selectedNode.domain),
+                        borderColor: getGraphDomainBorder(selectedNode.domain),
+                        backgroundColor: getGraphDomainTint(selectedNode.domain),
+                      }}
+                    >
+                      {selectedNode.domain.replace(/_/g, " ")}
+                    </span>
+                    {selectedNode.status ? (
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                        selectedNode.status === "pending"
+                          ? "bg-purple-500/15 text-purple-400 border border-purple-500/20"
+                          : selectedNode.success
+                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                            : "bg-red-500/15 text-red-400 border border-red-500/20"
+                      }`}>
+                        {selectedNode.status === "pending" ? "pending" : selectedNode.success ? "success" : "failed"}
+                      </span>
+                    ) : null}
+                  </div>
+                  <h2 className="text-xl font-semibold text-text-primary leading-snug mb-2">
+                    {selectedNode.label || selectedNode.id}
+                  </h2>
+                  <p className="text-xs font-mono text-text-muted">
+                    {selectedNode.id}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedNode(null)}
+                  className="graph-ui-button rounded-full p-2 text-text-muted hover:text-text-primary"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <section className="surface-note rounded-2xl p-5">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-3">
+                  Research Frame
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="graph-ui-stat rounded-2xl px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-2">
+                      Metric
+                    </p>
+                    <p className="text-sm text-text-primary">{selectedNode.metric_name}</p>
+                  </div>
+                  <div className="graph-ui-stat rounded-2xl px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-2">
+                      Value
+                    </p>
+                    <p className="text-sm font-mono text-text-primary">
                       {typeof selectedNode.metric_value === "number"
                         ? selectedNode.metric_value.toFixed(4)
                         : selectedNode.metric_value}
-                    </span>
+                    </p>
                   </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Method tags */}
-              {selectedNode.method_tags && selectedNode.method_tags.length > 0 && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-text-muted mb-2">Methods</h3>
-                  <div className="flex flex-wrap gap-1.5">
+              {selectedNode.idea && selectedNode.idea !== selectedNode.label ? (
+                <section className="surface-card-deep section-tone-clay rounded-2xl p-5">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-3">
+                    Idea / Method
+                  </p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-text-secondary">
+                    {selectedNode.idea}
+                  </p>
+                </section>
+              ) : null}
+
+              {selectedNode.method_tags && selectedNode.method_tags.length > 0 ? (
+                <section className="surface-card-deep section-tone-sage rounded-2xl p-5">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted">
+                      Techniques
+                    </p>
+                    <span className="text-xs text-text-muted">
+                      {selectedNode.method_tags.length} tags
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
                     {selectedNode.method_tags.map((tag) => (
-                      <span key={tag} className="text-xs px-2.5 py-1 rounded-full bg-white/5 text-text-secondary border border-white/10">
+                      <span
+                        key={tag}
+                        className="rounded-full px-3 py-1 text-xs"
+                        style={{
+                          color: getGraphDomainColor(selectedNode.domain),
+                          backgroundColor: getGraphDomainTint(selectedNode.domain, 0.14),
+                          border: `1px solid ${getGraphDomainBorder(selectedNode.domain, 0.22)}`,
+                        }}
+                      >
                         {tag}
                       </span>
                     ))}
                   </div>
-                </div>
-              )}
+                </section>
+              ) : null}
 
-              {/* Source */}
-              {selectedNode.source && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-text-muted mb-2">Source</h3>
-                  <p className="text-text-secondary text-sm font-mono">{selectedNode.source}</p>
-                </div>
-              )}
-
-              {/* Task */}
-              {selectedNode.task_name && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-text-muted mb-2">Task</h3>
-                  <p className="text-text-secondary text-sm">{selectedNode.task_name}</p>
-                </div>
-              )}
+              {selectedNode.source ? (
+                <section className="surface-card-deep section-tone-stone rounded-2xl p-5">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-3">
+                    Source
+                  </p>
+                  <p className="text-sm font-mono text-text-secondary break-all">
+                    {selectedNode.source}
+                  </p>
+                </section>
+              ) : null}
             </div>
-          </div>
+          </aside>
         </>
-      )}
+      ) : null}
     </div>
   );
 }

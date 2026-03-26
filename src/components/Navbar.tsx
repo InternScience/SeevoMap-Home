@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import type { ThemeMode } from "../utils/theme";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
@@ -8,9 +9,15 @@ const NAV_LINKS = [
   { to: "/docs", label: "Docs" },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  theme: ThemeMode;
+  onToggleTheme: () => void;
+}
+
+export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const nextThemeLabel = theme === "dark" ? "Light" : "Dark";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -18,13 +25,13 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
           <Link to="/" className="flex items-center gap-1 text-xl font-bold tracking-tight">
-            <span className="text-text-primary">S</span>
-            <span className="brand-evo">eevo</span>
+            <span className="text-text-primary">Se</span>
+            <span className="brand-evo">evo</span>
             <span className="text-text-primary">Map</span>
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-2">
             {NAV_LINKS.map((link) => {
               const isActive = link.to === "/docs"
                 ? location.pathname === "/docs" || location.pathname.startsWith("/docs/")
@@ -33,10 +40,10 @@ export default function Navbar() {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-colors duration-200 ${
                     isActive
                       ? "text-emerald-primary"
-                      : "text-text-secondary hover:text-text-primary hover:bg-white/5"
+                      : "text-text-secondary hover:text-text-primary surface-hover"
                   }`}
                 >
                   {link.label}
@@ -46,11 +53,29 @@ export default function Navbar() {
                 </Link>
               );
             })}
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="theme-toggle ml-2"
+              aria-label={`Switch to ${nextThemeLabel} mode`}
+              title={`Switch to ${nextThemeLabel} mode`}
+            >
+              {theme === "dark" ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v2.25m0 13.5V21m6.364-15.364l-1.591 1.591M7.227 16.773l-1.591 1.591M21 12h-2.25M5.25 12H3m15.364 6.364l-1.591-1.591M7.227 7.227 5.636 5.636M15.75 12A3.75 3.75 0 1112 8.25 3.75 3.75 0 0115.75 12z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3c0 .47.033.93.097 1.384a7.5 7.5 0 009.693 9.309z" />
+                </svg>
+              )}
+              <span className="text-sm font-medium">{nextThemeLabel}</span>
+            </button>
           </div>
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+            className="md:hidden p-2 rounded-xl text-text-secondary hover:text-text-primary surface-hover transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -81,13 +106,33 @@ export default function Navbar() {
                   className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive
                       ? "text-emerald-primary bg-emerald-primary/5"
-                      : "text-text-secondary hover:text-text-primary hover:bg-white/5"
+                      : "text-text-secondary hover:text-text-primary surface-hover"
                   }`}
                 >
                   {link.label}
                 </Link>
               );
             })}
+            <button
+              type="button"
+              onClick={() => {
+                onToggleTheme();
+                setMobileOpen(false);
+              }}
+              className="theme-toggle mt-2 w-full justify-center"
+              aria-label={`Switch to ${nextThemeLabel} mode`}
+            >
+              {theme === "dark" ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v2.25m0 13.5V21m6.364-15.364l-1.591 1.591M7.227 16.773l-1.591 1.591M21 12h-2.25M5.25 12H3m15.364 6.364l-1.591-1.591M7.227 7.227 5.636 5.636M15.75 12A3.75 3.75 0 1112 8.25 3.75 3.75 0 0115.75 12z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12.79A9 9 0 1111.21 3c0 .47.033.93.097 1.384a7.5 7.5 0 009.693 9.309z" />
+                </svg>
+              )}
+              <span className="text-sm font-medium">{nextThemeLabel}</span>
+            </button>
           </div>
         </div>
       )}
