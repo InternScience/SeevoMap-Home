@@ -62,6 +62,16 @@
   --graph-ui-shadow: rgba(0, 0, 0, 0.24);
   --graph-current: rgba(243, 240, 231, 0.15);
   --graph-current-strong: rgba(243, 240, 231, 0.24);
+  --graph-stage-fill-start: rgba(15, 21, 18, 0.82);
+  --graph-stage-fill-end: rgba(10, 14, 12, 0.9);
+  --graph-stage-border: rgba(191, 148, 92, 0.18);
+  --graph-stage-axis: rgba(191, 148, 92, 0.42);
+  --graph-stage-axis-label: rgba(220, 205, 178, 0.88);
+  --graph-stage-label: rgba(188, 196, 216, 0.84);
+  --graph-stage-guide: rgba(120, 142, 190, 0.14);
+  --graph-stage-beacon-fill: rgba(255, 255, 255, 0.08);
+  --graph-stage-beacon-stroke: rgba(255, 255, 255, 0.14);
+  --graph-stage-beacon-text: rgba(240, 234, 219, 0.92);
 }
 
 :root[data-theme="light"] {
@@ -116,6 +126,16 @@
   --graph-ui-shadow: rgba(92, 69, 43, 0.12);
   --graph-current: rgba(118, 90, 55, 0.1);
   --graph-current-strong: rgba(118, 90, 55, 0.18);
+  --graph-stage-fill-start: rgba(255, 252, 247, 0.92);
+  --graph-stage-fill-end: rgba(246, 236, 221, 0.95);
+  --graph-stage-border: rgba(170, 128, 77, 0.18);
+  --graph-stage-axis: rgba(170, 128, 77, 0.34);
+  --graph-stage-axis-label: rgba(134, 101, 66, 0.92);
+  --graph-stage-label: rgba(132, 109, 84, 0.9);
+  --graph-stage-guide: rgba(165, 136, 104, 0.12);
+  --graph-stage-beacon-fill: rgba(138, 108, 77, 0.08);
+  --graph-stage-beacon-stroke: rgba(138, 108, 77, 0.14);
+  --graph-stage-beacon-text: rgba(111, 85, 56, 0.92);
 }
 
 /* ── Keyframes ────────────────────────────────────────── */
@@ -147,6 +167,23 @@
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes heroGraphDrift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(10px, -6px, 0); }
+  50% { transform: translate3d(-8px, 8px, 0); }
+  75% { transform: translate3d(6px, 4px, 0); }
+}
+
+@keyframes heroGraphPulse {
+  0%, 100% { opacity: 0.22; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes heroGraphOrb {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -10px, 0) scale(1.08); }
 }
 
 /* ── Base ─────────────────────────────────────────────── */
@@ -298,6 +335,130 @@ body {
   background-image:
     radial-gradient(ellipse 80% 60% at 50% -20%, var(--color-tint-sage), transparent),
     radial-gradient(ellipse 60% 40% at 80% 60%, var(--color-tint-sky), transparent);
+}
+
+.hero-graph-shell {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.88;
+  --hero-graph-link-start: rgba(127, 177, 134, 0.14);
+  --hero-graph-link-end: rgba(115, 156, 168, 0.08);
+  --hero-graph-node-core: rgba(167, 217, 174, 0.85);
+  --hero-graph-node-glow: rgba(127, 177, 134, 0);
+  --hero-graph-node-fill: rgba(167, 217, 174, 0.88);
+  --hero-graph-node-alt: rgba(152, 188, 197, 0.72);
+  --hero-graph-orb-a: rgba(127, 177, 134, 0.12);
+  --hero-graph-orb-b: rgba(115, 156, 168, 0.1);
+  --hero-graph-orb-c: rgba(243, 240, 231, 0.05);
+}
+
+:root[data-theme="light"] .hero-graph-shell {
+  opacity: 0.72;
+  --hero-graph-link-start: rgba(164, 122, 76, 0.14);
+  --hero-graph-link-end: rgba(193, 141, 95, 0.08);
+  --hero-graph-node-core: rgba(184, 148, 102, 0.7);
+  --hero-graph-node-fill: rgba(184, 148, 102, 0.72);
+  --hero-graph-node-alt: rgba(193, 141, 95, 0.54);
+  --hero-graph-orb-a: rgba(193, 150, 104, 0.08);
+  --hero-graph-orb-b: rgba(224, 188, 140, 0.08);
+  --hero-graph-orb-c: rgba(130, 99, 67, 0.04);
+}
+
+.hero-graph-svg {
+  position: absolute;
+  inset: -4% -2% 0;
+  width: 104%;
+  height: 104%;
+  filter: blur(0.2px);
+}
+
+.hero-graph-cluster {
+  transform-origin: 50% 50%;
+}
+
+.hero-graph-cluster-a {
+  animation: heroGraphDrift 24s ease-in-out infinite;
+}
+
+.hero-graph-link {
+  stroke: url(#hero-link-glow);
+  stroke-width: 0.28;
+  opacity: 0.72;
+  animation: heroGraphPulse ease-in-out infinite;
+}
+
+.hero-graph-node {
+  transform-origin: center;
+  animation: heroGraphDrift ease-in-out infinite;
+}
+
+.hero-graph-node-core {
+  fill: var(--hero-graph-node-fill);
+}
+
+.hero-graph-node-secondary .hero-graph-node-core {
+  fill: var(--hero-graph-node-alt);
+}
+
+.hero-graph-node-glow {
+  opacity: 0.42;
+}
+
+.hero-graph-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(30px);
+  animation: heroGraphOrb ease-in-out infinite;
+}
+
+.hero-graph-orb-a {
+  top: 12%;
+  left: 14%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, var(--hero-graph-orb-a) 0%, transparent 72%);
+  animation-duration: 18s;
+}
+
+.hero-graph-orb-b {
+  right: 12%;
+  top: 18%;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, var(--hero-graph-orb-b) 0%, transparent 74%);
+  animation-duration: 22s;
+  animation-delay: -6s;
+}
+
+.hero-graph-orb-c {
+  left: 44%;
+  bottom: 8%;
+  width: 280px;
+  height: 180px;
+  background: radial-gradient(circle, var(--hero-graph-orb-c) 0%, transparent 76%);
+  animation-duration: 20s;
+  animation-delay: -10s;
+}
+
+@media (max-width: 768px) {
+  .hero-graph-shell {
+    opacity: 0.6;
+  }
+
+  .hero-graph-svg {
+    inset: 2% -16% 0;
+    width: 132%;
+    height: 100%;
+  }
+
+  .hero-graph-orb-a,
+  .hero-graph-orb-b,
+  .hero-graph-orb-c {
+    filter: blur(24px);
+  }
 }
 
 .docs-hero-field {

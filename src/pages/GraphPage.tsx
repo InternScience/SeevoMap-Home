@@ -7,6 +7,11 @@ import {
   getGraphDomainTint,
   getGraphDomainBorder,
 } from "../utils/graphPalette";
+import {
+  PUBLIC_DOMAIN_GROUPS,
+  getPublicDomainColorDomain,
+  getPublicDomainLabel,
+} from "../utils/publicDomains";
 
 function looksLikeInternalPlan(text: string): boolean {
   const value = (text || "").trim().toLowerCase();
@@ -51,12 +56,6 @@ function getGraphMethodDisplay(node: MapNode): {
   };
 }
 
-const DOMAIN_GROUPS: { label: string; domains: string[] }[] = [
-  { label: "AI Core", domains: ["pretraining", "posttraining", "model_compression"] },
-  { label: "AI for Science", domains: ["astronomy", "energy_systems", "earth_science", "materials_science", "neuroscience"] },
-  { label: "Science", domains: ["chemistry", "life_sciences", "physics", "mathematics", "medicine", "earth_space", "engineering", "economics"] },
-];
-
 export default function GraphPage() {
   const [mapData, setMapData] = useState<MapData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,15 +76,6 @@ export default function GraphPage() {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
-
-  const toggleDomain = useCallback((domain: string) => {
-    setEnabledDomains((prev) => {
-      const next = new Set(prev);
-      if (next.has(domain)) next.delete(domain);
-      else next.add(domain);
-      return next;
-    });
   }, []);
 
   const toggleGroup = useCallback((domains: string[]) => {
@@ -127,22 +117,22 @@ export default function GraphPage() {
   }
 
   const filteredCount = mapData.nodes.filter((node) => enabledDomains.has(node.domain)).length;
-  const enabledGroupCount = DOMAIN_GROUPS.flatMap((group) => group.domains)
-    .filter((domain) => enabledDomains.has(domain)).length;
-
-  const groupedDomains = DOMAIN_GROUPS.map((group) => ({
+  const publicGroups = PUBLIC_DOMAIN_GROUPS.map((group) => ({
     ...group,
     domains: group.domains.filter((domain) => allDomains.includes(domain)),
   })).filter((group) => group.domains.length > 0);
-
-  const knownDomains = new Set(DOMAIN_GROUPS.flatMap((group) => group.domains));
-  const ungrouped = allDomains.filter((domain) => !knownDomains.has(domain));
-  if (ungrouped.length > 0) {
-    groupedDomains.push({ label: "Other", domains: ungrouped });
-  }
+  const enabledPublicCount = publicGroups.filter((group) =>
+    group.domains.every((domain) => enabledDomains.has(domain)),
+  ).length;
 
   const graphHeight = typeof window !== "undefined" ? window.innerHeight - 64 : 900;
   const methodDisplay = selectedNode ? getGraphMethodDisplay(selectedNode) : null;
+  const selectedPublicDomainColor = selectedNode
+    ? getPublicDomainColorDomain(selectedNode.domain)
+    : null;
+  const selectedPublicDomainLabel = selectedNode
+    ? getPublicDomainLabel(selectedNode.domain)
+    : null;
 
   return (
     <div className="pt-16 relative" style={{ height: "100vh" }}>
@@ -169,7 +159,7 @@ export default function GraphPage() {
           <span className="flex flex-col items-start leading-tight">
             <span>Domains</span>
             <span className="text-[11px] font-normal text-text-muted">
-              {enabledDomains.size}/{allDomains.length} enabled
+              {enabledPublicCount}/{publicGroups.length} enabled
             </span>
           </span>
         </button>
@@ -183,7 +173,7 @@ export default function GraphPage() {
               {filteredCount.toLocaleString()} visible
             </span>
             <span className="text-text-muted">
-              {enabledGroupCount} core filters
+              {enabledPublicCount} public filters
             </span>
           </div>
         </div>
@@ -206,7 +196,7 @@ export default function GraphPage() {
                   Shape the graph view
                 </h2>
                 <p className="text-sm text-text-secondary leading-relaxed">
-                  Keep the graph clean by opening filters only when you need them.
+                  Toggle the public domain families without exposing internal data taxonomy.
                 </p>
               </div>
               <button
@@ -240,7 +230,7 @@ export default function GraphPage() {
             </div>
 
             <div className="space-y-4">
-              {groupedDomains.map((group) => {
+              {publicGroups.map((group) => {
                 const groupCount = group.domains.reduce(
                   (sum, domain) => sum + mapData.nodes.filter((node) => node.domain === domain).length,
                   0,
@@ -248,54 +238,30 @@ export default function GraphPage() {
                 const allEnabled = group.domains.every((domain) => enabledDomains.has(domain));
 
                 return (
-                  <section key={group.label} className="surface-note rounded-2xl p-4">
+                  <section key={group.key} className="surface-note rounded-2xl p-4">
                     <button
                       type="button"
                       onClick={() => toggleGroup(group.domains)}
-                      className="w-full flex items-center justify-between text-left mb-3"
+                      className="w-full flex items-center justify-between text-left"
                     >
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-1">
-                          {group.label}
-                        </p>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: getGraphDomainColor(group.colorDomain) }}
+                        />
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-1">
+                            {group.label}
+                          </p>
                         <p className="text-sm text-text-primary">
                           {groupCount.toLocaleString()} nodes
                         </p>
+                        </div>
                       </div>
                       <span className="graph-ui-chip rounded-full px-3 py-1 text-xs text-text-secondary">
                         {allEnabled ? "hide group" : "show group"}
                       </span>
                     </button>
-
-                    <div className="space-y-2">
-                      {group.domains.map((domain) => {
-                        const count = mapData.nodes.filter((node) => node.domain === domain).length;
-                        const checked = enabledDomains.has(domain);
-                        return (
-                          <label
-                            key={domain}
-                            className="graph-ui-chip flex items-center gap-3 rounded-2xl px-3 py-2.5 cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => toggleDomain(domain)}
-                              className="rounded border-border-subtle bg-bg-primary text-amber-primary focus:ring-amber-primary/30 focus:ring-offset-0 w-3.5 h-3.5"
-                            />
-                            <span
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: getGraphDomainColor(domain) }}
-                            />
-                            <span className="text-sm text-text-secondary flex-1 truncate">
-                              {domain.replace(/_/g, " ")}
-                            </span>
-                            <span className="text-[11px] text-text-muted font-mono">
-                              {count}
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
                   </section>
                 );
               })}
@@ -319,12 +285,12 @@ export default function GraphPage() {
                     <span
                       className="rounded-full border px-3 py-1 text-xs font-semibold"
                       style={{
-                        color: getGraphDomainColor(selectedNode.domain),
-                        borderColor: getGraphDomainBorder(selectedNode.domain),
-                        backgroundColor: getGraphDomainTint(selectedNode.domain),
+                        color: getGraphDomainColor(selectedPublicDomainColor || selectedNode.domain),
+                        borderColor: getGraphDomainBorder(selectedPublicDomainColor || selectedNode.domain),
+                        backgroundColor: getGraphDomainTint(selectedPublicDomainColor || selectedNode.domain),
                       }}
                     >
-                      {selectedNode.domain.replace(/_/g, " ")}
+                      {selectedPublicDomainLabel}
                     </span>
                     {selectedNode.status ? (
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -413,9 +379,9 @@ export default function GraphPage() {
                         key={tag}
                         className="rounded-full px-3 py-1 text-xs"
                         style={{
-                          color: getGraphDomainColor(selectedNode.domain),
-                          backgroundColor: getGraphDomainTint(selectedNode.domain, 0.14),
-                          border: `1px solid ${getGraphDomainBorder(selectedNode.domain, 0.22)}`,
+                          color: getGraphDomainColor(selectedPublicDomainColor || selectedNode.domain),
+                          backgroundColor: getGraphDomainTint(selectedPublicDomainColor || selectedNode.domain, 0.14),
+                          border: `1px solid ${getGraphDomainBorder(selectedPublicDomainColor || selectedNode.domain, 0.22)}`,
                         }}
                       >
                         {tag}

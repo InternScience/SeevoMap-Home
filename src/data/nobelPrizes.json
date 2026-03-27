@@ -1,0 +1,704 @@
+[
+  {
+    "year": 2000,
+    "field": "物理",
+    "winners": "阿尔费罗夫、克勒默、基尔比",
+    "contribution": "半导体异质结构与集成电路",
+    "papers": "1. Heterojunctions and Semiconductor Lasers\n2. Miniaturized Electronic Circuits",
+    "venue": "1. Zh. Tekh. Fiz / Sov. Phys\n2. US Patent 3,138,743",
+    "link": "https://patents.google.com/patent/US3138743A"
+  },
+  {
+    "year": 2000,
+    "field": "化学",
+    "winners": "希格、麦克迪尔米德、白川英树",
+    "contribution": "导电聚合物",
+    "papers": "Synthesis of electrically conducting organic polymers: halogen derivatives of polyacetylene, (CH)x",
+    "venue": "J. Chem. Soc., Chem. Commun.",
+    "link": "https://doi.org/10.1039/C39770000578"
+  },
+  {
+    "year": 2000,
+    "field": "医学",
+    "winners": "卡尔森、格林加德、坎德尔",
+    "contribution": "神经系统信号传导",
+    "papers": "The molecular biology of memory storage: a dialogue between genes and synapses",
+    "venue": "Science",
+    "link": "https://www.science.org/doi/10.1126/science.1067020"
+  },
+  {
+    "year": 2001,
+    "field": "物理",
+    "winners": "康奈尔、凯特勒、维曼",
+    "contribution": "玻色-爱因斯坦凝聚 (BEC)",
+    "papers": "Observation of Bose-Einstein Condensation in a Dilute Atomic Vapor",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.269.5221.198"
+  },
+  {
+    "year": 2001,
+    "field": "化学",
+    "winners": "诺尔斯、野依良治、夏普莱斯",
+    "contribution": "手性催化氢化/氧化",
+    "papers": "The first practical method for asymmetric epoxidation",
+    "venue": "J. Am. Chem. Soc.",
+    "link": "https://pubs.acs.org/doi/10.1021/ja00538a077?ref=recommended"
+  },
+  {
+    "year": 2001,
+    "field": "医学",
+    "winners": "哈特韦尔、亨特、纳斯",
+    "contribution": "细胞周期调控",
+    "papers": "Genetic control of the cell division cycle in yeast",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.183.4120.46"
+  },
+  {
+    "year": 2002,
+    "field": "物理",
+    "winners": "戴维斯、小柴昌俊、贾科尼",
+    "contribution": "宇宙中微子探测与X射线源",
+    "papers": "Search for Neutrinos from the Sun",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.20.1205"
+  },
+  {
+    "year": 2002,
+    "field": "化学",
+    "winners": "芬恩、田中耕一、维特里希",
+    "contribution": "生物大分子鉴定(质谱/NMR)",
+    "papers": "Electrospray ionization for mass spectrometry of large biomolecules",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.2675315"
+  },
+  {
+    "year": 2002,
+    "field": "医学",
+    "winners": "布伦纳、霍维茨、苏尔斯顿",
+    "contribution": "器官发育与细胞凋亡",
+    "papers": "The Structure of the Nervous System of the Nematode Caenorhabditis elegans",
+    "venue": "Philos. Trans. R. Soc. Lond. B",
+    "link": "https://doi.org/10.1098/rstb.1986.0056"
+  },
+  {
+    "year": 2003,
+    "field": "物理",
+    "winners": "阿布里科索夫、金茨堡、莱格特",
+    "contribution": "超导与超流理论",
+    "papers": "On the Magnetic Properties of Superconductors of the Second Group",
+    "venue": "Sov. Phys. JETP",
+    "link": "http://www.jetp.ras.ru/cgi-bin/e/index/e/5/6/p1174?a=list"
+  },
+  {
+    "year": 2003,
+    "field": "化学",
+    "winners": "阿格雷、麦金农",
+    "contribution": "细胞膜通道（水/离子）",
+    "papers": "The structure of the potassium channel: molecular basis of K+ conduction",
+    "venue": "Science",
+    "link": "https://www.science.org/doi/10.1126/science.280.5360.69"
+  },
+  {
+    "year": 2003,
+    "field": "医学",
+    "winners": "劳特伯、曼斯菲尔德",
+    "contribution": "磁共振成像 (MRI)",
+    "papers": "Image Formation by Induced Local Interactions: Examples Employing Nuclear Magnetic Resonance",
+    "venue": "Nature",
+    "link": "https://doi.org/10.1038/242190a0"
+  },
+  {
+    "year": 2004,
+    "field": "物理",
+    "winners": "格罗斯、波利策、维尔切克",
+    "contribution": "强相互作用渐近自由",
+    "papers": "Ultraviolet Behavior of Non-Abelian Gauge Theories",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.30.1343"
+  },
+  {
+    "year": 2004,
+    "field": "化学",
+    "winners": "切哈诺沃、赫什科、罗斯",
+    "contribution": "泛素介导的蛋白质降解",
+    "papers": "Proposed role of ATP in protein breakdown: conjugation of protein with multiple chains of the polypeptide of ATP-dependent proteolysis.",
+    "venue": "PNAS",
+    "link": "https://www.pnas.org/doi/abs/10.1073/pnas.77.4.1783"
+  },
+  {
+    "year": 2004,
+    "field": "医学",
+    "winners": "阿克塞尔、巴克",
+    "contribution": "嗅觉受体与系统",
+    "papers": "A novel multigene family may encode odorant receptors",
+    "venue": "Cell",
+    "link": "https://doi.org/10.1016/0092-8674(91)90418-X"
+  },
+  {
+    "year": 2005,
+    "field": "物理",
+    "winners": "格劳伯、霍尔、亨施",
+    "contribution": "量子光学相干性与光频梳",
+    "papers": "Direct Link between Microwave and Optical Frequencies with a 300 THz Femtosecond Laser Comb",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.84.5102"
+  },
+  {
+    "year": 2005,
+    "field": "化学",
+    "winners": "肖万、格拉布、施罗克",
+    "contribution": "烯烃复分解反应",
+    "papers": null,
+    "venue": null,
+    "link": ""
+  },
+  {
+    "year": 2005,
+    "field": "医学",
+    "winners": "马歇尔、沃伦",
+    "contribution": "幽门螺杆菌与胃病",
+    "papers": "Unidentified curved bacilli in the stomach of patients with gastritis",
+    "venue": "The Lancet",
+    "link": "https://pubmed.ncbi.nlm.nih.gov/6145023/"
+  },
+  {
+    "year": 2006,
+    "field": "物理",
+    "winners": "马瑟、斯穆特",
+    "contribution": "宇宙微波背景辐射黑体形式",
+    "papers": "A Preliminary Measurement of the Cosmic Microwave Background Spectrum",
+    "venue": "Astrophys. J.",
+    "link": "https://ui.adsabs.harvard.edu/abs/1990ApJ...354L..37M/abstract"
+  },
+  {
+    "year": 2006,
+    "field": "化学",
+    "winners": "科恩伯格",
+    "contribution": "真核转录的分子基础",
+    "papers": "Crystal structure of the yeast RNA polymerase II complex",
+    "venue": "Science",
+    "link": "https://www.science.org/doi/10.1126/science.1059495"
+  },
+  {
+    "year": 2006,
+    "field": "医学",
+    "winners": "法尔、梅洛",
+    "contribution": "RNA干扰 (RNAi)",
+    "papers": "Potent and specific genetic interference by double-stranded RNA in Caenorhabditis elegans",
+    "venue": "Nature",
+    "link": "https://www.nature.com/articles/35888"
+  },
+  {
+    "year": 2007,
+    "field": "物理",
+    "winners": "费尔、格林贝格",
+    "contribution": "巨磁阻效应 (GMR)",
+    "papers": "Giant Magnetoresistance of (001)Fe/(001)Cr Magnetic Superlattices",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.61.2472"
+  },
+  {
+    "year": 2007,
+    "field": "化学",
+    "winners": "埃特尔",
+    "contribution": "固体表面化学过程",
+    "papers": null,
+    "venue": null,
+    "link": ""
+  },
+  {
+    "year": 2007,
+    "field": "医学",
+    "winners": "卡佩奇、埃文斯、史密斯",
+    "contribution": "基因敲除小鼠技术",
+    "papers": "Site-directed mutagenesis by gene targeting in mouse embryo-derived stem cells",
+    "venue": "Cell",
+    "link": "https://pubmed.ncbi.nlm.nih.gov/2822260/"
+  },
+  {
+    "year": 2008,
+    "field": "物理",
+    "winners": "南部阳一郎、小林诚、益川敏英",
+    "contribution": "对称性破缺与夸克代数",
+    "papers": "CP-Violation in the Renormalizable Theory of Weak Interaction",
+    "venue": "Prog. Theor. Phys.",
+    "link": "https://doi.org/10.1143/PTP.49.652"
+  },
+  {
+    "year": 2008,
+    "field": "化学",
+    "winners": "下村修、查尔菲、钱永健",
+    "contribution": "绿色荧光蛋白 (GFP)",
+    "papers": "Green Fluorescent Protein as a Marker for Gene Expression",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.8303295"
+  },
+  {
+    "year": 2008,
+    "field": "医学",
+    "winners": "豪森、巴尔-西诺西、蒙塔尼",
+    "contribution": "HPV与HIV病毒发现",
+    "papers": "Isolation of a T-lymphotropic retrovirus from a patient at risk for AIDS",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.6189183"
+  },
+  {
+    "year": 2009,
+    "field": "物理",
+    "winners": "高锟、博伊尔、史密斯",
+    "contribution": "光纤传输与CCD传感器",
+    "papers": "Dielectric-fibre surface waveguides for optical frequencies",
+    "venue": "Proc. IEE",
+    "link": "https://doi.org/10.1049/piee.1966.0189"
+  },
+  {
+    "year": 2009,
+    "field": "化学",
+    "winners": "拉马克里希南、斯泰茨、约纳特",
+    "contribution": "核糖体结构与功能",
+    "papers": "Structure of the 50S ribosomal subunit",
+    "venue": "Science",
+    "link": "https://www.nature.com/articles/35030006"
+  },
+  {
+    "year": 2009,
+    "field": "医学",
+    "winners": "布莱克本、格雷德、绍斯塔克",
+    "contribution": "端粒与端粒酶",
+    "papers": "Identification of a specific telomere terminal transferase activity in Tetrahymena Extracts",
+    "venue": "Cell",
+    "link": "https://www.cell.com/cell/pdf/0092-8674(85)90170-9.pdf"
+  },
+  {
+    "year": 2010,
+    "field": "物理",
+    "winners": "盖姆、诺沃肖洛夫",
+    "contribution": "石墨烯",
+    "papers": "Electric Field Effect in Atomically Thin Carbon Films",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.1102896"
+  },
+  {
+    "year": 2010,
+    "field": "化学",
+    "winners": "赫克、根岸英一、铃木章",
+    "contribution": "钯催化交叉偶联反应",
+    "papers": "Palladium-catalyzed vinylic hydrogen substitution reactions with aryl, benzyl, and styryl halides",
+    "venue": "J. Am. Chem. Soc.",
+    "link": "https://pubs.acs.org/doi/10.1021/jo00979a024"
+  },
+  {
+    "year": 2010,
+    "field": "医学",
+    "winners": "爱德华兹",
+    "contribution": "体外受精 (IVF)",
+    "papers": "Birth after the reimplantation of a human embryo",
+    "venue": "The Lancet",
+    "link": "https://doi.org/10.1016/S0140-6736(78)92957-4"
+  },
+  {
+    "year": 2011,
+    "field": "物理",
+    "winners": "珀尔马特、施密特、里斯",
+    "contribution": "宇宙加速膨胀",
+    "papers": "Observational Evidence from Supernovae for an Accelerating Universe and a Cosmological Constant",
+    "venue": null,
+    "link": "https://arxiv.org/abs/astro-ph/9805201"
+  },
+  {
+    "year": 2011,
+    "field": "化学",
+    "winners": "谢赫特曼",
+    "contribution": "准晶体",
+    "papers": "Metallic Phase with Long-Range Orientational Order and No Translational Symmetry",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.53.1951"
+  },
+  {
+    "year": 2011,
+    "field": "医学",
+    "winners": "博伊特勒、霍夫曼、斯坦曼",
+    "contribution": "先天免疫与树突状细胞",
+    "papers": "The dorsoventral regulatory gene cassette spätzle/Toll/cactus controls the potent antifungal response in Drosophila adults",
+    "venue": "Cell",
+    "link": "https://pubmed.ncbi.nlm.nih.gov/8808632/"
+  },
+  {
+    "year": 2012,
+    "field": "物理",
+    "winners": "阿罗什、维因兰德",
+    "contribution": "单量子系统测量与操控",
+    "papers": "Observation of Quantum Jumps in a Single Atom",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.57.1699"
+  },
+  {
+    "year": 2012,
+    "field": "化学",
+    "winners": "莱夫科维茨、科比尔卡",
+    "contribution": "G蛋白偶联受体 (GPCR)",
+    "papers": "Crystal structure of the human beta2 adrenergic G-protein-coupled receptor",
+    "venue": "Nature",
+    "link": "https://doi.org/10.1038/nature06276"
+  },
+  {
+    "year": 2012,
+    "field": "医学",
+    "winners": "格登、山中伸弥",
+    "contribution": "细胞重编程 (iPS)",
+    "papers": "Induction of Pluripotent Stem Cells from Mouse Embryonic and Adult Fibroblast Cultures by Defined Factors",
+    "venue": "Cell",
+    "link": "https://www.cell.com/cell/fulltext/S0092-8674(06)00976-7?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS0092867406009767%3Fshowall%3Dtrue"
+  },
+  {
+    "year": 2013,
+    "field": "物理",
+    "winners": "恩格勒、希格斯",
+    "contribution": "希格斯机制",
+    "papers": "Broken Symmetries and the Masses of Gauge Bosons",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.13.508"
+  },
+  {
+    "year": 2013,
+    "field": "化学",
+    "winners": "卡普拉斯、列维特、瓦谢尔",
+    "contribution": "复杂化学系统多尺度模型",
+    "papers": "Theoretical studies of enzymic reactions: Dielectric, electrostatic and steric stabilization of the carbonium ion in the reaction of lysozyme",
+    "venue": "J. Mol. Biol.",
+    "link": "https://www.sciencedirect.com/science/article/abs/pii/0022283676903119?via%3Dihub"
+  },
+  {
+    "year": 2013,
+    "field": "医学",
+    "winners": "罗斯曼、谢克曼、苏德霍夫",
+    "contribution": "细胞囊泡运输",
+    "papers": "Reconstitution of the transport of protein between successive compartments of the Golgi measured by the coupled incorporation of N-acetylglucosamine",
+    "venue": "Cell",
+    "link": "https://pubmed.ncbi.nlm.nih.gov/6498939/"
+  },
+  {
+    "year": 2014,
+    "field": "物理",
+    "winners": "赤崎勇、天野浩、中村修二",
+    "contribution": "蓝色发光二极管 (LED)",
+    "papers": "Candela-class high-brightness InGaN/AlGaN double-heterostructure blue-light-emitting diodes",
+    "venue": "Appl. Phys. Lett.",
+    "link": "https://doi.org/10.1063/1.111832"
+  },
+  {
+    "year": 2014,
+    "field": "化学",
+    "winners": "贝齐格、赫尔、莫尔纳",
+    "contribution": "超分辨荧光显微镜",
+    "papers": "Breaking the diffraction resolution limit by stimulated emission: stimulated-emission-depletion fluorescence microscopy",
+    "venue": "Opt. Lett.",
+    "link": "https://doi.org/10.1364/OL.19.000780"
+  },
+  {
+    "year": 2014,
+    "field": "医学",
+    "winners": "奥基夫、莫泽夫妇",
+    "contribution": "大脑定位系统",
+    "papers": "Microstructure of a spatial map in the entorhinal cortex",
+    "venue": "Nature",
+    "link": "https://doi.org/10.1038/nature03721"
+  },
+  {
+    "year": 2015,
+    "field": "物理",
+    "winners": "梶田隆章、麦克唐纳",
+    "contribution": "中微子振荡",
+    "papers": "Evidence for Oscillation of Atmospheric Neutrinos",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.81.1562"
+  },
+  {
+    "year": 2015,
+    "field": "化学",
+    "winners": "林达尔、莫德里奇、桑贾尔",
+    "contribution": "DNA修复机制",
+    "papers": "DNA mismatch correction in a nuclear lysate",
+    "venue": "Cell",
+    "link": "https://pubmed.ncbi.nlm.nih.gov/2665076/"
+  },
+  {
+    "year": 2015,
+    "field": "医学",
+    "winners": "坎贝尔、大村智、屠呦呦",
+    "contribution": "抗寄生虫新疗法",
+    "papers": "The Structure of Artemisinin",
+    "venue": "Kexue Tongbao",
+    "link": "https://doi.org/10.1360/csb1977-22-3-142"
+  },
+  {
+    "year": 2016,
+    "field": "物理",
+    "winners": "索利斯、霍尔丹、科斯特利茨",
+    "contribution": "拓扑相变与拓扑物态",
+    "papers": "Quantized Hall Conductance in a Two-Dimensional Periodic Potential",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.49.405"
+  },
+  {
+    "year": 2016,
+    "field": "化学",
+    "winners": "索瓦日、斯托达特、费林加",
+    "contribution": "分子机器",
+    "papers": "A Molecular Shuttle",
+    "venue": "J. Am. Chem. Soc.",
+    "link": "https://doi.org/10.1021/ja00013a096"
+  },
+  {
+    "year": 2016,
+    "field": "医学",
+    "winners": "大隅良典",
+    "contribution": "细胞自噬",
+    "papers": "Isolation and characterization of autophagy-defective mutants",
+    "venue": "FEBS Lett.",
+    "link": "https://febs.onlinelibrary.wiley.com/doi/abs/10.1016/0014-5793%2893%2980398-E"
+  },
+  {
+    "year": 2017,
+    "field": "物理",
+    "winners": "韦斯、巴里什、索恩",
+    "contribution": "引力波探测 (LIGO)",
+    "papers": "Observation of Gravitational Waves from a Binary Black Hole Merger",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.116.061102"
+  },
+  {
+    "year": 2017,
+    "field": "化学",
+    "winners": "杜波谢、弗兰克、亨德森",
+    "contribution": "冷冻电镜 (Cryo-EM)",
+    "papers": "Electron microscopy of frozen water and aqueous solutions",
+    "venue": "J. Microsc.",
+    "link": "https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1365-2818.1982.tb04625.x"
+  },
+  {
+    "year": 2017,
+    "field": "医学",
+    "winners": "霍尔、拉斯巴什、杨",
+    "contribution": "昼夜节律",
+    "papers": "Molecular Analysis of the period Locus in Drosophila melanogaster",
+    "venue": "Cell",
+    "link": "https://www.cell.com/cell/abstract/0092-8674(84)90265-4"
+  },
+  {
+    "year": 2018,
+    "field": "物理",
+    "winners": "阿什金、穆鲁、斯特里克兰",
+    "contribution": "光镊与啁啾脉冲放大",
+    "papers": "Compression of amplified chirped optical pulses",
+    "venue": "Opt. Commun.",
+    "link": "https://doi.org/10.1016/0030-4018(85)90120-8"
+  },
+  {
+    "year": 2018,
+    "field": "化学",
+    "winners": "阿诺德、史密斯、温特",
+    "contribution": "酶定向进化与噬菌体展示",
+    "papers": "Filamentous Fusion Phage: Novel Expression Vectors That Display Cloned Antigens on the Virion Surface",
+    "venue": "Science",
+    "link": "https://www.science.org/doi/10.1126/science.4001944"
+  },
+  {
+    "year": 2018,
+    "field": "医学",
+    "winners": "艾利森、本庶佑",
+    "contribution": "免疫检查点疗法",
+    "papers": "Enhancement of Antitumor Immunity by CTLA-4 Blockade",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.271.5256.1734"
+  },
+  {
+    "year": 2019,
+    "field": "物理",
+    "winners": "皮布尔斯、马约尔、奎洛兹",
+    "contribution": "物理宇宙学与系外行星",
+    "papers": "A Jupiter-mass companion to a solar-type star",
+    "venue": "Nature",
+    "link": "https://doi.org/10.1038/378355a0"
+  },
+  {
+    "year": 2019,
+    "field": "化学",
+    "winners": "古迪纳夫、惠廷厄姆、吉野彰",
+    "contribution": "锂离子电池",
+    "papers": "LixCoO2 (0<x<-1): A new cathode material for batteries",
+    "venue": "Mater. Res. Bull.",
+    "link": "https://www.semanticscholar.org/paper/LixCoO2-(0%3Cx%3C-1)%3A-A-new-cathode-material-for-of-Mizushima-Jones/0e9dcbc1f1454d1bf64a1106e8a31a7bc6a2ba51"
+  },
+  {
+    "year": 2019,
+    "field": "医学",
+    "winners": "凯林、拉特克利夫、塞门扎",
+    "contribution": "细胞氧气感知",
+    "papers": "Hypoxia-inducible nuclear factors bind to an enhancer element",
+    "venue": "PNAS",
+    "link": "https://doi.org/10.1073/pnas.88.23.10538"
+  },
+  {
+    "year": 2020,
+    "field": "物理",
+    "winners": "彭罗斯、根泽尔、盖兹",
+    "contribution": "黑洞理论与银河系中心观测",
+    "papers": "Gravitational Collapse and Space-Time Singularities",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.14.57"
+  },
+  {
+    "year": 2020,
+    "field": "化学",
+    "winners": "夏彭蒂耶、杜德纳",
+    "contribution": "CRISPR/Cas9基因编辑",
+    "papers": "A Programmable Dual-RNA–Guided DNA Endonuclease in Adaptive Bacterial Immunity",
+    "venue": "Science",
+    "link": "https://www.science.org/doi/10.1126/science.1225829"
+  },
+  {
+    "year": 2020,
+    "field": "医学",
+    "winners": "阿尔特、霍顿、赖斯",
+    "contribution": "丙型肝炎病毒 (HCV)",
+    "papers": "Isolation of a cDNA clone derived from a blood-borne non-A, non-B viral hepatitis genome",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.2523562"
+  },
+  {
+    "year": 2021,
+    "field": "物理",
+    "winners": "真锅淑郎、哈塞尔曼、帕里西",
+    "contribution": "复杂系统与气候模型",
+    "papers": "Thermal Equilibrium of the Atmosphere with a Given Distribution of Relative Humidity",
+    "venue": "J. Atmos. Sci.",
+    "link": "https://doi.org/10.1175/1520-0469(1967)024<0241:TEOTAW>2.0.CO;2"
+  },
+  {
+    "year": 2021,
+    "field": "化学",
+    "winners": "利斯特、麦克米伦",
+    "contribution": "不对称有机催化",
+    "papers": "Proline-Catalyzed Direct Asymmetric Aldol Reactions",
+    "venue": "J. Am. Chem. Soc.",
+    "link": "https://doi.org/10.1021/ja994280y"
+  },
+  {
+    "year": 2021,
+    "field": "医学",
+    "winners": "朱利叶斯、帕塔普蒂安",
+    "contribution": "温度与触觉受体",
+    "papers": "The capsaicin receptor: a heat-activated ion channel in the pain pathway",
+    "venue": "Nature",
+    "link": "https://doi.org/10.1038/39807"
+  },
+  {
+    "year": 2022,
+    "field": "物理",
+    "winners": "阿斯佩、克劳泽、塞林格",
+    "contribution": "量子纠缠验证",
+    "papers": "Experimental Test of Bell's Inequalities Using Time-Varying Analyzers",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://doi.org/10.1103/PhysRevLett.49.1804"
+  },
+  {
+    "year": 2022,
+    "field": "化学",
+    "winners": "贝尔托齐、梅尔达尔、夏普莱斯",
+    "contribution": "点击化学与生物正交化学",
+    "papers": "Click Chemistry: Diverse Chemical Function from a Few Good Reactions",
+    "venue": "Angew. Chem. Int. Ed.",
+    "link": "https://doi.org/10.1002/1521-3773(20010601)40:11<2004::AID-ANIE2004>3.0.CO;2-5"
+  },
+  {
+    "year": 2022,
+    "field": "医学",
+    "winners": "帕博",
+    "contribution": "古基因组学",
+    "papers": "A Draft Sequence of the Neandertal Genome",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.1188021"
+  },
+  {
+    "year": 2023,
+    "field": "物理",
+    "winners": "阿戈斯蒂尼、克劳斯、勒惠利尔",
+    "contribution": "阿秒光脉冲",
+    "papers": "Observation of a Train of Attosecond Pulses from High Harmonic Generation",
+    "venue": "Science",
+    "link": "https://doi.org/10.1126/science.1059413"
+  },
+  {
+    "year": 2023,
+    "field": "化学",
+    "winners": "巴文迪、布鲁斯、叶基莫夫",
+    "contribution": "量子点",
+    "papers": "Synthesis and characterization of nearly monodisperse CdE (E = sulfur, selenium, tellurium) semiconductor nanocrystallites",
+    "venue": "J. Am. Chem. Soc.",
+    "link": "https://pubs.acs.org/doi/abs/10.1021/ja00072a025"
+  },
+  {
+    "year": 2023,
+    "field": "医学",
+    "winners": "卡里科、韦斯曼",
+    "contribution": "核苷碱基修饰与mRNA疫苗",
+    "papers": "Suppression of RNA Recognition by Toll-like Receptors",
+    "venue": "Immunity",
+    "link": "https://doi.org/10.1016/j.immuni.2005.06.008"
+  },
+  {
+    "year": 2024,
+    "field": "物理",
+    "winners": "霍普菲尔德、辛顿",
+    "contribution": "人工神经网络",
+    "papers": "Learning representations by back-propagating errors",
+    "venue": "Nature",
+    "link": "https://doi.org/10.1038/323533a0"
+  },
+  {
+    "year": 2024,
+    "field": "化学",
+    "winners": "贝克、哈萨比斯、詹珀",
+    "contribution": "蛋白质设计与结构预测",
+    "papers": "Highly accurate protein structure prediction with AlphaFold",
+    "venue": "Nature",
+    "link": "https://doi.org/10.1038/s41586-021-03819-2"
+  },
+  {
+    "year": 2024,
+    "field": "医学",
+    "winners": "安布罗斯、鲁夫昆",
+    "contribution": "microRNA",
+    "papers": "The C. elegans heterochronic gene lin-4 encodes small RNAs",
+    "venue": "Cell",
+    "link": "https://doi.org/10.1016/0092-8674(93)90529-Y"
+  },
+  {
+    "year": 2025,
+    "field": "物理",
+    "winners": "克拉克、德沃雷、马丁尼斯",
+    "contribution": "宏观量子隧穿",
+    "papers": "Measurements of Macroscopic Quantum Tunneling out of the Zero-Voltage State",
+    "venue": "Phys. Rev. Lett.",
+    "link": "https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.55.1908"
+  },
+  {
+    "year": 2025,
+    "field": "化学",
+    "winners": "北川进、罗布森、亚基",
+    "contribution": "金属有机框架 (MOFs)",
+    "papers": "Design and synthesis of an exceptionally stable and highly porous metal-organic framework",
+    "venue": "Nature",
+    "link": "https://www.nature.com/articles/46248"
+  },
+  {
+    "year": 2025,
+    "field": "医学",
+    "winners": "布伦科、拉姆斯德尔、坂口志文",
+    "contribution": "外周免疫耐受",
+    "papers": "Immunologic self-tolerance maintained by activated T cells expressing IL-2 receptor alpha-chains",
+    "venue": "J. Immunol.",
+    "link": ""
+  }
+]
