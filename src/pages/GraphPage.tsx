@@ -8,6 +8,49 @@ import {
   getGraphDomainBorder,
 } from "../utils/graphPalette";
 
+function looksLikeInternalPlan(text: string): boolean {
+  const value = (text || "").trim().toLowerCase();
+  if (!value) return false;
+
+  return [
+    "## research plan",
+    "created agents.md",
+    "created heartbeat.md",
+    "created soul.md",
+    "created tools.md",
+    "created user.md",
+    "memory/history.md",
+    "workdir:",
+    "approval:",
+    "sandbox:",
+    "provider:",
+    "openai codex",
+    "research preview",
+  ].some((pattern) => value.includes(pattern));
+}
+
+function getGraphMethodDisplay(node: MapNode): {
+  text: string;
+  isPlaceholder: boolean;
+} {
+  const rawIdea = (node.idea || "").trim();
+  const source = (node.source || "").toLowerCase();
+  const shouldSuppress =
+    source.startsWith("researchclawbench/") || looksLikeInternalPlan(rawIdea);
+
+  if (!rawIdea || rawIdea === (node.label || "").trim() || shouldSuppress) {
+    return {
+      text: "This public node does not include a clean method summary. Use the task title, metric, and technique tags as the reliable public fields.",
+      isPlaceholder: true,
+    };
+  }
+
+  return {
+    text: rawIdea,
+    isPlaceholder: false,
+  };
+}
+
 const DOMAIN_GROUPS: { label: string; domains: string[] }[] = [
   { label: "AI Core", domains: ["pretraining", "posttraining", "model_compression"] },
   { label: "AI for Science", domains: ["astronomy", "energy_systems", "earth_science", "materials_science", "neuroscience"] },
@@ -99,6 +142,7 @@ export default function GraphPage() {
   }
 
   const graphHeight = typeof window !== "undefined" ? window.innerHeight - 64 : 900;
+  const methodDisplay = selectedNode ? getGraphMethodDisplay(selectedNode) : null;
 
   return (
     <div className="pt-16 relative" style={{ height: "100vh" }}>
@@ -338,13 +382,17 @@ export default function GraphPage() {
                 </div>
               </section>
 
-              {selectedNode.idea && selectedNode.idea !== selectedNode.label ? (
+              {methodDisplay ? (
                 <section className="surface-card-deep section-tone-clay rounded-2xl p-5">
                   <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-3">
                     Idea / Method
                   </p>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-text-secondary">
-                    {selectedNode.idea}
+                  <p
+                    className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                      methodDisplay.isPlaceholder ? "text-text-muted" : "text-text-secondary"
+                    }`}
+                  >
+                    {methodDisplay.text}
                   </p>
                 </section>
               ) : null}
@@ -374,17 +422,6 @@ export default function GraphPage() {
                       </span>
                     ))}
                   </div>
-                </section>
-              ) : null}
-
-              {selectedNode.source ? (
-                <section className="surface-card-deep section-tone-stone rounded-2xl p-5">
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-3">
-                    Source
-                  </p>
-                  <p className="text-sm font-mono text-text-secondary break-all">
-                    {selectedNode.source}
-                  </p>
                 </section>
               ) : null}
             </div>

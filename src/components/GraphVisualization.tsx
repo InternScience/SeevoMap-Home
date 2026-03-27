@@ -596,12 +596,6 @@ export default function GraphVisualization({
                   : tooltip.node.metric_value}
               </span>
             </div>
-
-            {tooltip.node.source ? (
-              <p className="text-[10px] text-text-muted mt-1.5 truncate">
-                {tooltip.node.source}
-              </p>
-            ) : null}
           </div>
         </div>
       ) : null}
