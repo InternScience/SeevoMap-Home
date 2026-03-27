@@ -247,9 +247,28 @@ export async function browseByDomain(
   sourceFilter = "",
 ): Promise<SearchResult[]> {
   const map = await fetchMapData();
+  const publicDomainAliases: Record<string, string[]> = {
+    information_science: [
+      "information_science",
+      "pretraining",
+      "posttraining",
+      "model_compression",
+    ],
+    life_science: ["life_science", "life_sciences", "neuroscience"],
+    physics: ["physics"],
+    mathematics: ["mathematics"],
+    earth_space: ["earth_space", "earth_science", "astronomy"],
+    engineering: ["engineering", "energy_systems", "materials_science"],
+    chemistry: ["chemistry"],
+    medicine: ["medicine"],
+    economics: ["economics"],
+  };
+  const allowedDomains = publicDomainAliases[domainFilter] || [domainFilter];
+
   return map.nodes
     .filter((node) => {
-      const domainMatch = (node.domain || "").toLowerCase().includes(domainFilter.toLowerCase());
+      const domain = (node.domain || "").toLowerCase();
+      const domainMatch = allowedDomains.includes(domain);
       if (!domainMatch) return false;
       if (!sourceFilter) return true;
       // sourceFilter: "ai4s" → source contains "ai4s", "science" → source contains "science"

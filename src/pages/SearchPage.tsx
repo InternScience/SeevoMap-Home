@@ -13,7 +13,7 @@ const MARKET_STATS = [
   },
   {
     label: "Research Domains",
-    value: "19",
+    value: "9",
     desc: "Covered by the public graph",
   },
   {
@@ -21,48 +21,18 @@ const MARKET_STATS = [
     value: "15,365",
     desc: "Links between related runs",
   },
-  {
-    label: "Loop Surfaces",
-    value: "Claude / Loop / Framework",
-    desc: "Primary integration paths",
-  },
 ];
 
-const FILTER_GROUPS = [
-  {
-    group: "AI Core",
-    filters: [
-      { key: "pretraining", label: "Pretraining" },
-      { key: "posttraining", label: "Post-Training" },
-      { key: "model_compression", label: "Compression" },
-    ],
-  },
-  {
-    group: "AI for Science",
-    filters: [
-      { key: "ai4s:chemistry", label: "Chemistry" },
-      { key: "ai4s:life", label: "Life Science" },
-      { key: "ai4s:physics", label: "Physics" },
-      { key: "ai4s:math", label: "Math" },
-      { key: "ai4s:medicine", label: "Medicine" },
-      { key: "ai4s:earth", label: "Earth & Space" },
-      { key: "ai4s:engineering", label: "Engineering" },
-      { key: "ai4s:economics", label: "Economics" },
-    ],
-  },
-  {
-    group: "Science",
-    filters: [
-      { key: "sci:chemistry", label: "Chemistry" },
-      { key: "sci:life", label: "Life Science" },
-      { key: "sci:physics", label: "Physics" },
-      { key: "sci:math", label: "Math" },
-      { key: "sci:medicine", label: "Medicine" },
-      { key: "sci:earth", label: "Earth & Space" },
-      { key: "sci:engineering", label: "Engineering" },
-      { key: "sci:economics", label: "Economics" },
-    ],
-  },
+const FILTERS = [
+  { key: "information_science", label: "Information Science" },
+  { key: "chemistry", label: "Chemistry" },
+  { key: "life_science", label: "Life Science" },
+  { key: "physics", label: "Physics" },
+  { key: "mathematics", label: "Mathematics" },
+  { key: "medicine", label: "Medicine" },
+  { key: "earth_space", label: "Earth & Space" },
+  { key: "engineering", label: "Engineering" },
+  { key: "economics", label: "Economics" },
 ];
 
 const CURATED_QUERIES = [
@@ -170,25 +140,15 @@ export default function SearchPage() {
       if (!searched) { setResults([]); }
       return;
     }
-    // Parse prefix: "ai4s:chemistry" → domain="chemistry", sourceFilter="ai4s"
-    // "pretraining" → domain="pretraining", sourceFilter=""
-    let domain = key;
-    let sourceFilter = "";
-    if (key.startsWith("ai4s:")) {
-      domain = key.slice(5);
-      sourceFilter = "ai4s";
-    } else if (key.startsWith("sci:")) {
-      domain = key.slice(4);
-      sourceFilter = "science";
-    }
-
     setLoading(true);
     setSearched(true);
-    const label = sourceFilter ? `${sourceFilter === "ai4s" ? "AI4S" : "Science"} / ${domain}` : domain;
+    const filterLabel = FILTERS.find((filter) => filter.key === key)?.label || key;
+    const domain = key;
+    const label = filterLabel;
     setLastQuery(label);
     setShouldScrollToResults(true);
     try {
-      const data = await browseByDomain(domain, 30, sourceFilter);
+      const data = await browseByDomain(domain, 30);
       setResults(data);
     } catch {
       setResults([]);
@@ -262,30 +222,24 @@ export default function SearchPage() {
                 All
               </button>
             </div>
-            {/* Grouped filters */}
-            {FILTER_GROUPS.map((group) => (
-              <div key={group.group} className="flex flex-wrap gap-2 items-center">
-                <span className="text-[10px] uppercase tracking-[0.16em] text-text-muted w-16 flex-shrink-0">
-                  {group.group}
-                </span>
-                {group.filters.map((filter) => {
-                  const isActive = activeFilter === filter.key;
-                  return (
-                    <button
-                      key={filter.key}
-                      onClick={() => handleFilterClick(filter.key)}
-                      className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-                        isActive
-                          ? "surface-pill-active text-emerald-primary"
-                          : "surface-pill text-text-secondary hover:text-text-primary"
-                      }`}
-                    >
-                      {filter.label}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
+            <div className="flex flex-wrap gap-2 items-center">
+              {FILTERS.map((filter) => {
+                const isActive = activeFilter === filter.key;
+                return (
+                  <button
+                    key={filter.key}
+                    onClick={() => handleFilterClick(filter.key)}
+                    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                      isActive
+                        ? "surface-pill-active text-emerald-primary"
+                        : "surface-pill text-text-secondary hover:text-text-primary"
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="mb-10">
