@@ -10,8 +10,8 @@ import {
   getPublicDomainLabel,
 } from "../utils/publicDomains";
 import {
-  getSemanticDomainAnchors,
   getSemanticMaturityBands,
+  getSemanticScaleAnchors,
   layoutSemanticNodes,
 } from "../utils/graphSemanticLayout";
 import { getNobelReferences } from "../utils/nobelReferences";
@@ -37,11 +37,114 @@ interface SemanticNode {
   node: MapNode;
   x: number;
   y: number;
+  anchor: {
+    key: string;
+  };
+  maturity: {
+    key: string;
+  };
+}
+
+interface SemanticCohort {
+  key: string;
+  domain: string;
+  nodeIds: string[];
+  count: number;
+  meanX: number;
+  meanY: number;
+  spreadX: number;
+  spreadY: number;
+}
+
+interface SemanticDomainCloud {
+  key: string;
+  domain: string;
+  count: number;
+  meanX: number;
+  meanY: number;
+  spreadX: number;
+  spreadY: number;
+}
+
+interface SemanticCloudBridge {
+  from: SemanticDomainCloud;
+  to: SemanticDomainCloud;
+  weight: number;
+}
+
+interface InformationMassBand {
+  minX: number;
+  maxX: number;
+  meanY: number;
+  maxSpreadY: number;
 }
 
 interface ScreenPoint {
   x: number;
   y: number;
+}
+
+const SCENE_ARCH = [
+  { x: 0.2, y: 0.3 },
+  { x: 0.29, y: 0.265 },
+  { x: 0.43, y: 0.245 },
+  { x: 0.56, y: 0.238 },
+  { x: 0.67, y: 0.25 },
+  { x: 0.75, y: 0.3 },
+];
+
+const SCENE_LEFT_HINT = [
+  { x: 0.205, y: 0.302 },
+  { x: 0.23, y: 0.41 },
+  { x: 0.28, y: 0.53 },
+];
+
+const SCENE_RIGHT_HINT = [
+  { x: 0.75, y: 0.302 },
+  { x: 0.77, y: 0.41 },
+  { x: 0.74, y: 0.54 },
+];
+
+function traceSmoothPath(
+  context: CanvasRenderingContext2D,
+  points: ScreenPoint[],
+  closed = false,
+): void {
+  if (points.length < 2) return;
+
+  context.moveTo(points[0].x, points[0].y);
+  const lastCurveIndex = closed ? points.length - 1 : points.length - 2;
+  for (let index = 0; index <= lastCurveIndex; index += 1) {
+    const p0 = closed
+      ? points[(index - 1 + points.length) % points.length]
+      : points[Math.max(0, index - 1)];
+    const p1 = points[index];
+    const p2 = closed
+      ? points[(index + 1) % points.length]
+      : points[Math.min(points.length - 1, index + 1)];
+    const p3 = closed
+      ? points[(index + 2) % points.length]
+      : points[Math.min(points.length - 1, index + 2)];
+
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+
+    context.bezierCurveTo(c1x, c1y, c2x, c2y, p2.x, p2.y);
+  }
+
+  if (closed) {
+    context.closePath();
+  }
+}
+
+function seededRatio(seed: string): number {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
+  }
+  return (hash % 10000) / 10000;
 }
 
 type TooltipState =
@@ -58,12 +161,10 @@ export default function GraphVisualization({
   const containerRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [dim, setDim] = useState({ w: 800, h: height });
-  const [, setCameraVersion] = useState(0);
 
   const cam = useRef({ x: 0, y: 0, scale: 1 });
   const drag = useRef({ active: false, sx: 0, sy: 0, cx: 0, cy: 0 });
   const animFrame = useRef<number>(0);
-  const overlayFrame = useRef<number | null>(null);
 
   const filteredNodes = domainFilter
     ? data.nodes.filter((node) => domainFilter.has(node.domain))
@@ -93,8 +194,121 @@ export default function GraphVisualization({
     () => new Map(semanticNodes.map((item) => [item.node.id, item])),
     [semanticNodes],
   );
+  const renderSemanticNodes = useMemo(
+    () =>
+      [...semanticNodes].sort(
+        (left, right) =>
+          seededRatio(`${left.node.id}:render-order`) -
+          seededRatio(`${right.node.id}:render-order`),
+      ),
+    [semanticNodes],
+  );
+  const semanticCohorts = useMemo<SemanticCohort[]>(() => {
+    const buckets = new Map<string, SemanticNode[]>();
+    for (const item of semanticNodes) {
+      const key = `${item.node.domain}::${(item.node.label || item.node.id).trim()}`;
+      const bucket = buckets.get(key) ?? [];
+      bucket.push(item);
+      buckets.set(key, bucket);
+    }
 
-  const publicAnchors = useMemo(() => getSemanticDomainAnchors(), []);
+    return [...buckets.entries()]
+      .map(([key, items]) => {
+        const xs = items.map((item) => item.x);
+        const ys = items.map((item) => item.y);
+        return {
+          key,
+          domain: items[0]?.node.domain || "information_science",
+          nodeIds: items.map((item) => item.node.id),
+          count: items.length,
+          meanX: xs.reduce((sum, value) => sum + value, 0) / xs.length,
+          meanY: ys.reduce((sum, value) => sum + value, 0) / ys.length,
+          spreadX: Math.max(...xs) - Math.min(...xs),
+          spreadY: Math.max(...ys) - Math.min(...ys),
+        };
+      })
+      .sort((left, right) => right.count - left.count);
+  }, [semanticNodes]);
+  const semanticCohortByNodeId = useMemo(() => {
+    const mapping = new Map<string, SemanticCohort>();
+    for (const cohort of semanticCohorts) {
+      for (const nodeId of cohort.nodeIds) {
+        mapping.set(nodeId, cohort);
+      }
+    }
+    return mapping;
+  }, [semanticCohorts]);
+  const massCohorts = useMemo(
+    () => semanticCohorts.filter((cohort) => cohort.count >= 80),
+    [semanticCohorts],
+  );
+  const massNodeIdSet = useMemo(
+    () => new Set(massCohorts.flatMap((cohort) => cohort.nodeIds)),
+    [massCohorts],
+  );
+  const informationMassBand = useMemo<InformationMassBand | null>(() => {
+    const infoCohorts = massCohorts.filter((cohort) =>
+      ["pretraining", "posttraining"].includes(cohort.domain),
+    );
+    if (infoCohorts.length === 0) return null;
+
+    const totalCount = infoCohorts.reduce((sum, cohort) => sum + cohort.count, 0);
+    return {
+      minX: Math.min(...infoCohorts.map((cohort) => cohort.meanX - cohort.spreadX * 0.6)),
+      maxX: Math.max(...infoCohorts.map((cohort) => cohort.meanX + cohort.spreadX * 0.6)),
+      meanY:
+        infoCohorts.reduce((sum, cohort) => sum + cohort.meanY * cohort.count, 0) /
+        Math.max(totalCount, 1),
+      maxSpreadY: Math.max(...infoCohorts.map((cohort) => cohort.spreadY)),
+    };
+  }, [massCohorts]);
+  const semanticDomainClouds = useMemo<SemanticDomainCloud[]>(() => {
+    const buckets = new Map<string, SemanticNode[]>();
+    for (const item of semanticNodes) {
+      const key = item.anchor.key;
+      const bucket = buckets.get(key) ?? [];
+      bucket.push(item);
+      buckets.set(key, bucket);
+    }
+
+    return [...buckets.entries()]
+      .map(([key, items]) => {
+        const xs = items.map((item) => item.x);
+        const ys = items.map((item) => item.y);
+        return {
+          key,
+          domain: getPublicDomainColorDomain(key),
+          count: items.length,
+          meanX: xs.reduce((sum, value) => sum + value, 0) / xs.length,
+          meanY: ys.reduce((sum, value) => sum + value, 0) / ys.length,
+          spreadX: Math.max(...xs) - Math.min(...xs),
+          spreadY: Math.max(...ys) - Math.min(...ys),
+        };
+      })
+      .filter((cloud) => cloud.count >= 12)
+      .sort((left, right) => left.meanX - right.meanX);
+  }, [semanticNodes]);
+  const semanticCloudBridges = useMemo<SemanticCloudBridge[]>(() => {
+    const clouds = semanticDomainClouds.filter((cloud) => cloud.count >= 24);
+    const bridges: SemanticCloudBridge[] = [];
+
+    for (let index = 1; index < clouds.length; index += 1) {
+      const left = clouds[index - 1];
+      const right = clouds[index];
+      const distance = Math.hypot(right.meanX - left.meanX, right.meanY - left.meanY);
+      if (distance > 0.42) continue;
+
+      bridges.push({
+        from: left,
+        to: right,
+        weight: Math.max(0.18, 1 - distance / 0.42),
+      });
+    }
+
+    return bridges;
+  }, [semanticDomainClouds]);
+
+  const scaleAnchors = useMemo(() => getSemanticScaleAnchors(), []);
   const maturityBands = useMemo(() => getSemanticMaturityBands(), []);
   const nobelReferences = useMemo(() => getNobelReferences(), []);
   const nobelLinks = useMemo(() => {
@@ -109,7 +323,7 @@ export default function GraphVisualization({
           distance: Math.hypot(item.x - beacon.x, item.y - beacon.y),
         }))
         .sort((left, right) => left.distance - right.distance)
-        .slice(0, 3);
+        .slice(0, 1);
 
       return candidates;
     });
@@ -126,26 +340,9 @@ export default function GraphVisualization({
     return () => observer.disconnect();
   }, []);
 
-  const requestOverlayRefresh = useCallback(() => {
-    if (overlayFrame.current !== null) return;
-    overlayFrame.current = requestAnimationFrame(() => {
-      overlayFrame.current = null;
-      setCameraVersion((value) => value + 1);
-    });
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (overlayFrame.current !== null) {
-        cancelAnimationFrame(overlayFrame.current);
-      }
-    };
-  }, []);
-
   useEffect(() => {
     cam.current = { x: 0, y: 0, scale: 1 };
-    requestOverlayRefresh();
-  }, [requestOverlayRefresh, stage.height, stage.width]);
+  }, [stage.height, stage.width]);
 
   const clampCamera = useCallback(() => {
     const maxOffsetX = Math.max((stage.width * (cam.current.scale - 1)) / 2, 0);
@@ -245,10 +442,11 @@ export default function GraphVisualization({
       ctx.clip();
 
       const stageAtmosphere = [
-        { x: 0.18, y: 0.22, r: 0.32, domain: "pretraining", alpha: 0.12 },
-        { x: 0.42, y: 0.28, r: 0.22, domain: "physics", alpha: 0.08 },
-        { x: 0.62, y: 0.42, r: 0.28, domain: "chemistry", alpha: 0.07 },
-        { x: 0.78, y: 0.58, r: 0.28, domain: "earth_space", alpha: 0.07 },
+        { x: 0.24, y: 0.26, r: 0.14, domain: "earth_space", alpha: 0.08 },
+        { x: 0.46, y: 0.54, r: 0.19, domain: "pretraining", alpha: 0.12 },
+        { x: 0.54, y: 0.55, r: 0.18, domain: "posttraining", alpha: 0.11 },
+        { x: 0.64, y: 0.32, r: 0.15, domain: "chemistry", alpha: 0.08 },
+        { x: 0.74, y: 0.24, r: 0.12, domain: "physics", alpha: 0.08 },
       ];
 
       for (const field of stageAtmosphere) {
@@ -265,22 +463,187 @@ export default function GraphVisualization({
         ctx.fill();
       }
 
+      const archPoints = SCENE_ARCH.map((point) => toScreen(point.x, point.y));
+      const leftHintPoints = SCENE_LEFT_HINT.map((point) => toScreen(point.x, point.y));
+      const rightHintPoints = SCENE_RIGHT_HINT.map((point) => toScreen(point.x, point.y));
+      const guideStroke = ctx.createLinearGradient(
+        stage.x,
+        stage.y,
+        stage.x + stage.width,
+        stage.y + stage.height,
+      );
+      guideStroke.addColorStop(0, "rgba(115, 156, 168, 0.42)");
+      guideStroke.addColorStop(1, "rgba(127, 177, 134, 0.34)");
+
+      const contourProbe = archPoints[2];
+      canvas.dataset.cameraScale = cam.current.scale.toFixed(3);
+      canvas.dataset.cameraX = cam.current.x.toFixed(2);
+      canvas.dataset.cameraY = cam.current.y.toFixed(2);
+      canvas.dataset.contourProbeX = contourProbe.x.toFixed(2);
+      canvas.dataset.contourProbeY = contourProbe.y.toFixed(2);
+
+      for (const bridge of semanticCloudBridges) {
+        const start = toScreen(bridge.from.meanX, bridge.from.meanY);
+        const end = toScreen(bridge.to.meanX, bridge.to.meanY);
+        const bend = stage.height * (0.028 + bridge.weight * 0.016);
+        const gradient = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
+        gradient.addColorStop(0, getGraphDomainGlow(bridge.from.domain, 0.042 + bridge.weight * 0.016));
+        gradient.addColorStop(1, getGraphDomainGlow(bridge.to.domain, 0.042 + bridge.weight * 0.016));
+
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = Math.max(32, stage.width * (0.04 + bridge.weight * 0.018));
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.quadraticCurveTo((start.x + end.x) / 2, (start.y + end.y) / 2 - bend, end.x, end.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      for (const cloud of semanticDomainClouds) {
+        const center = toScreen(cloud.meanX, cloud.meanY);
+        const radiusX = Math.max(stage.width * (cloud.spreadX * 0.64 + 0.055), 56);
+        const radiusY = Math.max(stage.height * (cloud.spreadY * 0.92 + 0.05), 38);
+        const radius = Math.max(radiusX, radiusY);
+        const lobeOffsetX = Math.sin(cloud.meanX * 11.2 + cloud.meanY * 8.4) * radiusX * 0.16;
+        const lobeOffsetY = Math.cos(cloud.meanX * 7.5 - cloud.meanY * 12.1) * radiusY * 0.12;
+
+        ctx.save();
+        ctx.translate(center.x, center.y);
+        ctx.scale(radiusX / radius, radiusY / radius);
+        const wash = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+        wash.addColorStop(0, getGraphDomainGlow(cloud.domain, 0.082));
+        wash.addColorStop(0.42, getGraphDomainTint(cloud.domain, 0.05));
+        wash.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = wash;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(center.x + lobeOffsetX, center.y + lobeOffsetY);
+        ctx.scale((radiusX * 0.74) / radius, (radiusY * 0.78) / radius);
+        const core = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+        core.addColorStop(0, getGraphDomainGlow(cloud.domain, 0.07));
+        core.addColorStop(0.38, getGraphDomainTint(cloud.domain, 0.032));
+        core.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = core;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      if (informationMassBand) {
+        const centerX = (informationMassBand.minX + informationMassBand.maxX) / 2;
+        const center = toScreen(centerX, informationMassBand.meanY);
+        const width = Math.max(
+          stage.width * (informationMassBand.maxX - informationMassBand.minX + 0.115),
+          220,
+        );
+        const height = Math.max(
+          stage.height * (informationMassBand.maxSpreadY * 2.15 + 0.135),
+          84,
+        );
+        const radius = Math.max(width, height);
+
+        ctx.save();
+        ctx.translate(center.x, center.y);
+        ctx.scale(width / radius, height / radius);
+        const wash = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+        wash.addColorStop(0, "rgba(124, 161, 255, 0.17)");
+        wash.addColorStop(0.38, "rgba(167, 121, 255, 0.1)");
+        wash.addColorStop(0.72, "rgba(255, 118, 118, 0.06)");
+        wash.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = wash;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.globalAlpha = 0.08;
+      ctx.strokeStyle = graphStageGuide;
+      ctx.lineCap = "round";
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      traceSmoothPath(ctx, archPoints);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = guideStroke;
+      ctx.lineCap = "round";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10, 8]);
+      ctx.beginPath();
+      traceSmoothPath(ctx, archPoints);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.strokeStyle = guideStroke;
+      ctx.lineCap = "round";
+      ctx.lineWidth = 1.1;
+      ctx.setLineDash([4, 10]);
+      ctx.beginPath();
+      traceSmoothPath(ctx, leftHintPoints);
+      ctx.stroke();
+      ctx.beginPath();
+      traceSmoothPath(ctx, rightHintPoints);
+      ctx.stroke();
+      ctx.restore();
+
+      for (const cohort of massCohorts) {
+        const isSharedInformationCore =
+          cohort.count >= 600 && ["pretraining", "posttraining"].includes(cohort.domain);
+        if (isSharedInformationCore) {
+          continue;
+        }
+        const center = toScreen(cohort.meanX, cohort.meanY);
+        const radiusX = Math.max(stage.width * (cohort.spreadX * 0.54 + 0.022), 32);
+        const radiusY = Math.max(stage.height * (cohort.spreadY * 0.86 + 0.024), 22);
+        const radius = Math.max(radiusX, radiusY);
+
+        ctx.save();
+        ctx.translate(center.x, center.y);
+        ctx.scale(radiusX / radius, radiusY / radius);
+        const wash = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+        wash.addColorStop(0, getGraphDomainGlow(cohort.domain, 0.16));
+        wash.addColorStop(0.42, getGraphDomainTint(cohort.domain, 0.06));
+        wash.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = wash;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
       for (const band of maturityBands) {
-        const start = toScreen(0.03, band.y);
-        const end = toScreen(0.97, band.y);
+        const leftStart = toScreen(0.03, band.y);
+        const leftEnd = toScreen(0.18, band.y);
+        const rightStart = toScreen(0.84, band.y);
+        const rightEnd = toScreen(0.97, band.y);
         ctx.strokeStyle = graphStageGuide;
         ctx.lineWidth = 0.8;
         ctx.setLineDash([4, 9]);
         ctx.beginPath();
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
+        ctx.moveTo(leftStart.x, leftStart.y);
+        ctx.lineTo(leftEnd.x, leftEnd.y);
+        ctx.moveTo(rightStart.x, rightStart.y);
+        ctx.lineTo(rightEnd.x, rightEnd.y);
         ctx.stroke();
       }
       ctx.setLineDash([]);
 
       let edgeCount = 0;
       for (const edge of data.edges) {
-        if (edgeCount > 2600) break;
+        if (edgeCount > 1800) break;
+        if (massNodeIdSet.has(edge.source) || massNodeIdSet.has(edge.target)) continue;
         const source = semanticNodeMap.get(edge.source);
         const target = semanticNodeMap.get(edge.target);
         if (!source || !target) continue;
@@ -288,13 +651,13 @@ export default function GraphVisualization({
         const sp = toScreen(source.x, source.y);
         const tp = toScreen(target.x, target.y);
         const distance = Math.hypot(tp.x - sp.x, tp.y - sp.y);
-        if (distance > stage.width * 0.42) continue;
+        if (distance > stage.width * 0.36) continue;
 
         const gradient = ctx.createLinearGradient(sp.x, sp.y, tp.x, tp.y);
-        gradient.addColorStop(0, getGraphDomainGlow(source.node.domain, 0.11));
-        gradient.addColorStop(1, getGraphDomainGlow(target.node.domain, 0.11));
+        gradient.addColorStop(0, getGraphDomainGlow(source.node.domain, 0.08));
+        gradient.addColorStop(1, getGraphDomainGlow(target.node.domain, 0.08));
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = distance > stage.width * 0.12 ? 0.65 : 0.95;
+        ctx.lineWidth = distance > stage.width * 0.12 ? 0.55 : 0.8;
         ctx.beginPath();
         ctx.moveTo(sp.x, sp.y);
         ctx.quadraticCurveTo((sp.x + tp.x) / 2, (sp.y + tp.y) / 2 - 8, tp.x, tp.y);
@@ -308,31 +671,130 @@ export default function GraphVisualization({
         const end = toScreen(link.nodeX, link.nodeY);
         const gradient = ctx.createLinearGradient(start.x, start.y, end.x, end.y);
         gradient.addColorStop(0, graphStageBeaconStroke);
-        gradient.addColorStop(1, getGraphDomainGlow(link.node.domain, 0.16));
+        gradient.addColorStop(1, getGraphDomainGlow(link.node.domain, 0.08));
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 0.8;
-        ctx.setLineDash([2, 8]);
+        ctx.lineWidth = 0.55;
+        ctx.setLineDash([2, 10]);
         ctx.beginPath();
         ctx.moveTo(start.x, start.y);
-        ctx.quadraticCurveTo((start.x + end.x) / 2, (start.y + end.y) / 2 - 10, end.x, end.y);
+        ctx.quadraticCurveTo((start.x + end.x) / 2, (start.y + end.y) / 2 - 8, end.x, end.y);
         ctx.stroke();
         nobelEdgeCount += 1;
       }
       ctx.setLineDash([]);
 
-      const baseRadius = Math.max(2.3, 2.9 * cam.current.scale);
-      for (const item of semanticNodes) {
+      const baseRadius = Math.max(2.25, 2.75 * cam.current.scale);
+      for (const item of renderSemanticNodes) {
         const point = toScreen(item.x, item.y);
-        const radius = baseRadius;
-        const color = getGraphDomainColor(item.node.domain);
+        const isInfo = item.anchor.key === "information_science";
+        const cohort = semanticCohortByNodeId.get(item.node.id);
+        const isMassCohort = (cohort?.count ?? 1) >= 80;
+        const isLargeMassCohort = (cohort?.count ?? 1) >= 600;
+        const densityFactor = cohort ? Math.min(1, Math.log2(cohort.count) / 10) : 0;
+        const isInformationMassCohort = isMassCohort && isInfo;
+        const sampleVisibility = !isMassCohort
+          ? 1
+          : isInformationMassCohort
+            ? cohort!.count <= 1100
+              ? 0.44
+              : 0.32
+            : cohort!.count <= 220
+            ? 0.72
+            : cohort!.count <= 600
+              ? 0.56
+              : cohort!.count <= 1100
+                ? 0.38
+                : 0.24;
+        const isVisibleMassParticle =
+          !isMassCohort || seededRatio(`${item.node.id}:visible-mass-particle`) <= sampleVisibility;
+        if (!isVisibleMassParticle) {
+          continue;
+        }
+        const radius =
+          isMassCohort
+            ? Math.max(
+                isInformationMassCohort ? 1.35 : isLargeMassCohort ? 1.05 : 1.55,
+                baseRadius *
+                  (isInformationMassCohort
+                    ? 0.68
+                    : isLargeMassCohort
+                      ? 0.52
+                      : isInfo
+                        ? 0.68
+                        : 0.78),
+              )
+            : item.maturity.key === "hypothesis_led"
+              ? baseRadius * 1.02
+              : isInfo
+                ? baseRadius * 0.72
+                : baseRadius * 0.88;
 
-        const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius * 3.2);
-        halo.addColorStop(0, getGraphDomainGlow(item.node.domain, 0.16));
-        halo.addColorStop(0.7, getGraphDomainTint(item.node.domain, 0.05));
+        const halo = ctx.createRadialGradient(
+          point.x,
+          point.y,
+          0,
+          point.x,
+          point.y,
+          radius *
+            (isMassCohort
+              ? isInformationMassCohort
+                ? 2.8
+                : isLargeMassCohort
+                  ? 2.1
+                  : 2.5
+              : isInfo
+                ? 2.4
+                : 3),
+        );
+        halo.addColorStop(
+          0,
+          getGraphDomainGlow(
+            item.node.domain,
+            isMassCohort
+              ? isInformationMassCohort
+                ? 0.14
+                : isLargeMassCohort
+                  ? 0.07
+                  : 0.1
+              : isInfo
+                ? 0.1
+                : 0.14,
+          ),
+        );
+        halo.addColorStop(
+          0.7,
+          getGraphDomainTint(
+            item.node.domain,
+            isMassCohort
+              ? isInformationMassCohort
+                ? 0.05
+                : isLargeMassCohort
+                  ? 0.024
+                  : 0.034
+              : isInfo
+                ? 0.03
+                : 0.05,
+          ),
+        );
         halo.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = halo;
         ctx.beginPath();
-        ctx.arc(point.x, point.y, radius * 3.2, 0, Math.PI * 2);
+        ctx.arc(
+          point.x,
+          point.y,
+          radius *
+            (isMassCohort
+              ? isInformationMassCohort
+                ? 2.8
+                : isLargeMassCohort
+                  ? 2.1
+                  : 2.5
+              : isInfo
+                ? 2.4
+                : 3),
+          0,
+          Math.PI * 2,
+        );
         ctx.fill();
 
         const dot = ctx.createRadialGradient(
@@ -343,9 +805,46 @@ export default function GraphVisualization({
           point.y,
           radius,
         );
-        dot.addColorStop(0, "rgba(255,255,255,0.94)");
-        dot.addColorStop(0.35, color);
-        dot.addColorStop(1, color);
+        dot.addColorStop(
+          0,
+          isMassCohort
+            ? isLargeMassCohort
+              ? "rgba(255,255,255,0.58)"
+              : "rgba(255,255,255,0.62)"
+            : isInfo
+              ? "rgba(255,255,255,0.78)"
+              : "rgba(255,255,255,0.92)",
+        );
+        dot.addColorStop(
+          0.35,
+          getGraphDomainGlow(
+            item.node.domain,
+            isMassCohort
+              ? isInformationMassCohort
+                ? 0.82 - densityFactor * 0.06
+                : isLargeMassCohort
+                  ? 0.64 - densityFactor * 0.08
+                  : 0.7 - densityFactor * 0.08
+              : isInfo
+                ? 0.82
+                : 0.94,
+          ),
+        );
+        dot.addColorStop(
+          1,
+          getGraphDomainGlow(
+            item.node.domain,
+            isMassCohort
+              ? isInformationMassCohort
+                ? 0.82 - densityFactor * 0.06
+                : isLargeMassCohort
+                  ? 0.64 - densityFactor * 0.08
+                  : 0.7 - densityFactor * 0.08
+              : isInfo
+                ? 0.82
+                : 0.94,
+          ),
+        );
         ctx.fillStyle = dot;
         ctx.beginPath();
         ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
@@ -354,19 +853,19 @@ export default function GraphVisualization({
 
       for (const beacon of nobelReferences) {
         const point = toScreen(beacon.x, beacon.y);
-        const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, 16);
+        const halo = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, 14);
         halo.addColorStop(0, "rgba(255,255,255,0.18)");
         halo.addColorStop(1, "rgba(255,255,255,0)");
         ctx.fillStyle = halo;
         ctx.beginPath();
-        ctx.arc(point.x, point.y, 16, 0, Math.PI * 2);
+        ctx.arc(point.x, point.y, 14, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = graphStageBeaconFill;
         ctx.strokeStyle = graphStageBeaconStroke;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(point.x, point.y, 10, 0, Math.PI * 2);
+        ctx.arc(point.x, point.y, 8.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
@@ -395,7 +894,7 @@ export default function GraphVisualization({
       ctx.fillStyle = graphNodeCount;
       ctx.textAlign = "right";
       ctx.fillText(
-        `${filteredNodes.length.toLocaleString()} nodes · ${Math.min(edgeCount, 2600).toLocaleString()} semantic edges · ${nobelEdgeCount.toLocaleString()} reference ties`,
+        `${filteredNodes.length.toLocaleString()} nodes · ${Math.min(edgeCount, 1800).toLocaleString()} semantic edges · ${nobelEdgeCount.toLocaleString()} reference ties`,
         w - 18,
         26,
       );
@@ -406,7 +905,26 @@ export default function GraphVisualization({
       ctx.textBaseline = "alphabetic";
       ctx.fillText("drag inside the stage · scroll to zoom", 18, h - 18);
     },
-    [data.edges, dim, filteredNodes.length, maturityBands, nobelLinks, nobelReferences, semanticNodeMap, semanticNodes, stage, toScreen, tooltip],
+    [
+      data.edges,
+      dim,
+      filteredNodes.length,
+      massCohorts,
+      massNodeIdSet,
+      maturityBands,
+      nobelLinks,
+      nobelReferences,
+      semanticCohortByNodeId,
+      semanticCloudBridges,
+      semanticDomainClouds,
+      informationMassBand,
+      semanticNodeMap,
+      semanticNodes,
+      renderSemanticNodes,
+      stage,
+      toScreen,
+      tooltip,
+    ],
   );
 
   useEffect(() => {
@@ -475,9 +993,8 @@ export default function GraphVisualization({
       cam.current.y = mouseRelY - (mouseRelY - cam.current.y) * (nextScale / cam.current.scale);
       cam.current.scale = nextScale;
       clampCamera();
-      requestOverlayRefresh();
     },
-    [clampCamera, isInsideStage, requestOverlayRefresh, stage.centerX, stage.centerY],
+    [clampCamera, isInsideStage, stage.centerX, stage.centerY],
   );
 
   const handleMouseDown = useCallback(
@@ -504,7 +1021,6 @@ export default function GraphVisualization({
         cam.current.x = drag.current.cx + (event.clientX - drag.current.sx);
         cam.current.y = drag.current.cy + (event.clientY - drag.current.sy);
         clampCamera();
-        requestOverlayRefresh();
         setTooltip(null);
         canvas.style.cursor = "grabbing";
         return;
@@ -531,14 +1047,13 @@ export default function GraphVisualization({
         }
       }
     },
-    [clampCamera, findNobelBeacon, findNode, isInsideStage, requestOverlayRefresh],
+    [clampCamera, findNobelBeacon, findNode, isInsideStage],
   );
 
   const handleMouseUp = useCallback(() => {
     drag.current.active = false;
     clampCamera();
-    requestOverlayRefresh();
-  }, [clampCamera, requestOverlayRefresh]);
+  }, [clampCamera]);
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
@@ -578,12 +1093,6 @@ export default function GraphVisualization({
         viewBox={`0 0 ${dim.w} ${dim.h}`}
         aria-hidden="true"
       >
-        <defs>
-          <clipPath id="semantic-stage-clip">
-            <rect x={stage.x} y={stage.y} width={stage.width} height={stage.height} rx={28} />
-          </clipPath>
-        </defs>
-
         <rect
           x={stage.x}
           y={stage.y}
@@ -620,7 +1129,7 @@ export default function GraphVisualization({
           fontWeight="700"
           textAnchor="start"
         >
-          ← Micro / Abstract
+          ← Macro
         </text>
         <text
           x={stage.x + stage.width - 10}
@@ -630,7 +1139,7 @@ export default function GraphVisualization({
           fontWeight="700"
           textAnchor="end"
         >
-          Macro / Systems →
+          Micro →
         </text>
 
         {maturityBands.map((band) => {
@@ -651,7 +1160,7 @@ export default function GraphVisualization({
           );
         })}
 
-        {publicAnchors.map((anchor) => (
+        {scaleAnchors.map((anchor) => (
           <text
             key={anchor.key}
             x={stage.x + anchor.x * stage.width}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import StatsCounter from "../components/StatsCounter";
 import CodeBlock from "../components/CodeBlock";
+import HeroGraphField from "../components/HeroGraphField";
 
 const FEATURES = [
   {
@@ -70,6 +71,7 @@ export default function HomePage() {
       {/* ---- Hero ---------------------------------------- */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 hero-field" />
+        <HeroGraphField />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 text-center">
           <h1 className="animate-fade-in text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6">
@@ -85,7 +87,7 @@ export default function HomePage() {
 
           <div className="animate-slide-up delay-200 flex justify-center gap-12 sm:gap-16 mb-12">
             <StatsCounter value={4279} label="Execution Records" />
-            <StatsCounter value={19} label="Research Domains" />
+            <StatsCounter value={9} label="Research Domains" />
             <StatsCounter value={15365} label="Connections" />
           </div>
 

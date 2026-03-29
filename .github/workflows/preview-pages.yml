@@ -30,20 +30,8 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Validate Pages bootstrap token
-        env:
-          PAGES_TOKEN: ${{ secrets.PAGES_TOKEN }}
-        run: |
-          if [ -z "${PAGES_TOKEN}" ]; then
-            echo "Missing required secret: PAGES_TOKEN" >&2
-            exit 1
-          fi
-
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          token: ${{ secrets.PAGES_TOKEN }}
-          enablement: true
 
       - name: Build preview site bundle
         run: |
