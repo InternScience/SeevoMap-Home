@@ -5,7 +5,7 @@ import type { ThemeMode } from "../utils/theme";
 const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/graph", label: "Graph" },
-  { to: "/search", label: "Search" },
+  { to: "/search", label: "Market" },
   { to: "/docs", label: "Docs" },
 ];
 
