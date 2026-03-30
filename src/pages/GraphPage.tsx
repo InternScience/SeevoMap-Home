@@ -117,6 +117,16 @@ export default function GraphPage() {
   }
 
   const filteredCount = mapData.nodes.filter((node) => enabledDomains.has(node.domain)).length;
+  // 估算采样后显示的数量（只有 AI 任务采样 15%，其他全部显示）
+  const aiDomains = new Set(['pretraining', 'posttraining', 'model_compression', 'information_science']);
+  const sampledCount = mapData.nodes
+    .filter((node) => enabledDomains.has(node.domain))
+    .reduce((count, node) => {
+      const isAI = aiDomains.has(node.domain?.toLowerCase() || '');
+      return count + (isAI ? 0.15 : 1);
+    }, 0);
+  const estimatedVisible = Math.round(sampledCount);
+
   const publicGroups = PUBLIC_DOMAIN_GROUPS.map((group) => ({
     ...group,
     domains: group.domains.filter((domain) => allDomains.includes(domain)),
@@ -170,10 +180,10 @@ export default function GraphPage() {
           </p>
           <div className="flex items-center gap-3 text-sm">
             <span className="text-text-primary font-medium">
-              {filteredCount.toLocaleString()} visible
+              ~{estimatedVisible.toLocaleString()} shown
             </span>
             <span className="text-text-muted">
-              {enabledPublicCount} public filters
+              of {filteredCount.toLocaleString()}
             </span>
           </div>
         </div>
@@ -196,7 +206,7 @@ export default function GraphPage() {
                   Shape the graph view
                 </h2>
                 <p className="text-sm text-text-secondary leading-relaxed">
-                  Toggle the public domain families without exposing internal data taxonomy.
+                  Toggle domains to filter the graph. X-axis shows research scale (Universe→Quantum), Y-axis shows contribution type (Clinical→Theory).
                 </p>
               </div>
               <button
@@ -213,18 +223,18 @@ export default function GraphPage() {
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div className="graph-ui-stat rounded-2xl px-4 py-3">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-2">
-                  Showing
+                  Displayed
                 </p>
                 <p className="text-lg font-semibold text-text-primary">
-                  {filteredCount.toLocaleString()}
+                  ~{estimatedVisible.toLocaleString()}
                 </p>
               </div>
               <div className="graph-ui-stat rounded-2xl px-4 py-3">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-2">
-                  Total
+                  Filtered
                 </p>
                 <p className="text-lg font-semibold text-text-primary">
-                  {mapData.nodes.length.toLocaleString()}
+                  {filteredCount.toLocaleString()}
                 </p>
               </div>
             </div>
