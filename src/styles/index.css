@@ -72,6 +72,8 @@
   --graph-stage-beacon-fill: rgba(255, 255, 255, 0.08);
   --graph-stage-beacon-stroke: rgba(255, 255, 255, 0.14);
   --graph-stage-beacon-text: rgba(240, 234, 219, 0.92);
+  --graph-nobel-frontier: rgba(212, 175, 85, 0.6);
+  --graph-nobel-frontier-text: rgba(220, 185, 95, 0.9);
 }
 
 :root[data-theme="light"] {
@@ -136,6 +138,8 @@
   --graph-stage-beacon-fill: rgba(138, 108, 77, 0.08);
   --graph-stage-beacon-stroke: rgba(138, 108, 77, 0.14);
   --graph-stage-beacon-text: rgba(111, 85, 56, 0.92);
+  --graph-nobel-frontier: rgba(160, 120, 50, 0.55);
+  --graph-nobel-frontier-text: rgba(140, 100, 40, 0.85);
 }
 
 /* ── Keyframes ────────────────────────────────────────── */
