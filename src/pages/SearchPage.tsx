@@ -1,5 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { searchNodes, getNodeDetail, browseByDomain } from "../utils/api";
+import { useAuth } from "../auth/AuthContext";
+import { getGraphLabel } from "../config";
+import {
+  searchNodes,
+  getNodeDetail,
+  browseByDomain,
+  createInjectSession,
+  submitLeaderboardFeedback,
+} from "../utils/api";
 import type { SearchResult, NodeDetail } from "../utils/types";
 import SearchBox from "../components/SearchBox";
 import NodeCard from "../components/NodeCard";
@@ -59,6 +67,7 @@ const CURATED_QUERIES = [
 ];
 
 export default function SearchPage() {
+  const { accessToken, selectedGraphId } = useAuth();
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -69,6 +78,14 @@ export default function SearchPage() {
   const [selectedNode, setSelectedNode] = useState<NodeDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [shouldScrollToResults, setShouldScrollToResults] = useState(false);
+  const [injecting, setInjecting] = useState(false);
+  const [injectSessionId, setInjectSessionId] = useState<string | null>(null);
+  const [injectMessage, setInjectMessage] = useState<string | null>(null);
+  const [feedbackHelpful, setFeedbackHelpful] = useState("");
+  const [feedbackNotHelpful, setFeedbackNotHelpful] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const handleSearch = useCallback(async (query: string) => {
@@ -78,8 +95,18 @@ export default function SearchPage() {
     setLastQuery(query);
     setActiveFilter("all");
     setShouldScrollToResults(true);
+    setInjectSessionId(null);
+    setInjectMessage(null);
+    setFeedbackHelpful("");
+    setFeedbackNotHelpful("");
+    setFeedbackLoading(false);
+    setFeedbackMessage(null);
+    setFeedbackError(null);
     try {
-      const data = await searchNodes(query, 10);
+      const data = await searchNodes(query, 10, {
+        graphId: selectedGraphId,
+        accessToken,
+      });
       setResults(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Search failed");
@@ -87,7 +114,7 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [accessToken, selectedGraphId]);
 
   useEffect(() => {
     if (!loading && searched && shouldScrollToResults && resultsRef.current) {
@@ -101,7 +128,10 @@ export default function SearchPage() {
     setSelectedNode(null);
     setError(null);
     try {
-      const detail = await getNodeDetail(id);
+      const detail = await getNodeDetail(id, {
+        graphId: selectedGraphId,
+        accessToken,
+      });
       if (!detail) {
         setError("Failed to load node detail");
         return;
@@ -112,7 +142,7 @@ export default function SearchPage() {
     } finally {
       setDetailLoading(false);
     }
-  }, []);
+  }, [accessToken, selectedGraphId]);
 
   const handleNodeClick = useCallback(async (node: SearchResult) => {
     await loadNodeDetail(node.id);
@@ -123,16 +153,67 @@ export default function SearchPage() {
   }, [loadNodeDetail]);
 
   const handleCopyAsPrompt = useCallback(() => {
-    const prompt = results
-      .map(
-        (r, i) =>
-          `[${i + 1}] Domain: ${r.domain || "unknown"}\nIdea: ${r.idea || "Untitled execution asset"}\nMetric: ${r.metric_name || "metric"} = ${typeof r.metric_value === "number" ? r.metric_value : 0}\n`,
-      )
-      .join("\n");
-    navigator.clipboard.writeText(
-      `Here are relevant prior execution records from SeevoMap:\n\n${prompt}`,
-    );
-  }, [results]);
+    if (!lastQuery.trim()) return;
+    setInjecting(true);
+    setInjectMessage(null);
+    setFeedbackMessage(null);
+    setFeedbackError(null);
+
+    void createInjectSession(lastQuery, 10, "", "community_real", {
+      graphId: selectedGraphId,
+      accessToken,
+    })
+      .then(async (payload) => {
+        setInjectSessionId(payload.session_id);
+        await navigator.clipboard.writeText(payload.prompt_text);
+        setInjectMessage(
+          `Agent context copied. Session ID: ${payload.session_id}`,
+        );
+      })
+      .catch((e) => {
+        setInjectMessage(
+          e instanceof Error ? e.message : "Failed to create inject session",
+        );
+      })
+      .finally(() => {
+        setInjecting(false);
+      });
+  }, [accessToken, lastQuery, selectedGraphId]);
+
+  const handleSubmitFeedback = useCallback(async () => {
+    if (!injectSessionId) {
+      setFeedbackError("Create an inject session first.");
+      setFeedbackMessage(null);
+      return;
+    }
+
+    setFeedbackLoading(true);
+    setFeedbackError(null);
+    setFeedbackMessage(null);
+    try {
+      const helpful = feedbackHelpful
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const notHelpful = feedbackNotHelpful
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      await submitLeaderboardFeedback(injectSessionId, helpful, notHelpful, {
+        graphId: selectedGraphId,
+        accessToken,
+      });
+      setFeedbackMessage(`Feedback saved for session ${injectSessionId}.`);
+      setFeedbackHelpful("");
+      setFeedbackNotHelpful("");
+    } catch (e) {
+      setFeedbackError(
+        e instanceof Error ? e.message : "Failed to submit feedback",
+      );
+    } finally {
+      setFeedbackLoading(false);
+    }
+  }, [accessToken, feedbackHelpful, feedbackNotHelpful, injectSessionId, selectedGraphId]);
 
   const handleFilterClick = useCallback(async (key: string) => {
     setActiveFilter(key);
@@ -148,14 +229,31 @@ export default function SearchPage() {
     setLastQuery(label);
     setShouldScrollToResults(true);
     try {
-      const data = await browseByDomain(domain, 30);
+      const data = await browseByDomain(domain, 30, "", {
+        graphId: selectedGraphId,
+        accessToken,
+      });
       setResults(data);
     } catch {
       setResults([]);
     } finally {
       setLoading(false);
     }
-  }, [searched]);
+  }, [accessToken, searched, selectedGraphId]);
+
+  useEffect(() => {
+    setResults([]);
+    setSelectedNode(null);
+    setInjectSessionId(null);
+    setInjectMessage(null);
+    setFeedbackHelpful("");
+    setFeedbackNotHelpful("");
+    setFeedbackMessage(null);
+    setFeedbackError(null);
+    setSearched(false);
+    setActiveFilter("all");
+    setError(null);
+  }, [selectedGraphId]);
 
   const filteredResults =
     activeFilter === "all"
@@ -179,6 +277,12 @@ export default function SearchPage() {
               Browse execution assets, discover reusable experiment patterns,
               and pull agent-ready context from the SeevoMap graph in one place.
             </p>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-border-subtle px-4 py-2 text-sm text-text-secondary">
+              <span className="text-text-muted">Active graph</span>
+              <span className="font-semibold text-text-primary">
+                {getGraphLabel(selectedGraphId)}
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
@@ -351,9 +455,68 @@ export default function SearchPage() {
                     d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                   />
                 </svg>
-                Copy as Prompt
+                {injecting ? "Preparing..." : "Create Inject Session"}
               </button>
             </div>
+
+            {(injectMessage || injectSessionId || feedbackMessage || feedbackError) && (
+              <div className="mb-6 grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
+                <div className="surface-card section-tone-sky rounded-3xl p-6">
+                  <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-3">
+                    Inject Session
+                  </p>
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">
+                    Session-bound prompt generation
+                  </h3>
+                  <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                    This creates one leaderboard-eligible inject session and copies
+                    backend-formatted agent context to your clipboard.
+                  </p>
+                  {injectSessionId && (
+                    <p className="text-sm text-text-primary mb-2">
+                      Session ID: <code>{injectSessionId}</code>
+                    </p>
+                  )}
+                  {injectMessage && (
+                    <p className="text-sm text-cyan-light">{injectMessage}</p>
+                  )}
+                </div>
+
+                <div className="surface-card section-tone-stone rounded-3xl p-6">
+                  <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-3">
+                    Optional Feedback
+                  </p>
+                  <div className="space-y-3">
+                    <input
+                      value={feedbackHelpful}
+                      onChange={(event) => setFeedbackHelpful(event.target.value)}
+                      placeholder="Helpful node IDs: comma,separated"
+                      className="w-full rounded-2xl border border-border-subtle bg-transparent px-4 py-3 text-sm text-text-primary"
+                    />
+                    <input
+                      value={feedbackNotHelpful}
+                      onChange={(event) => setFeedbackNotHelpful(event.target.value)}
+                      placeholder="Not helpful node IDs: comma,separated"
+                      className="w-full rounded-2xl border border-border-subtle bg-transparent px-4 py-3 text-sm text-text-primary"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void handleSubmitFeedback()}
+                      disabled={feedbackLoading}
+                      className="w-full rounded-2xl bg-emerald-primary px-4 py-3 text-sm font-medium text-white transition-opacity disabled:opacity-60"
+                    >
+                      {feedbackLoading ? "Submitting..." : "Submit Feedback"}
+                    </button>
+                  </div>
+                  {feedbackMessage && (
+                    <p className="mt-3 text-sm text-emerald-primary">{feedbackMessage}</p>
+                  )}
+                  {feedbackError && (
+                    <p className="mt-3 text-sm text-red-400">{feedbackError}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredResults.map((node) => (

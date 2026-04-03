@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "../auth/AuthContext";
+import { getGraphLabel } from "../config";
 import { fetchMapData } from "../utils/api";
 import type { MapData, MapNode } from "../utils/types";
 import GraphVisualization from "../components/GraphVisualization";
@@ -57,6 +59,7 @@ function getGraphMethodDisplay(node: MapNode): {
 }
 
 export default function GraphPage() {
+  const { accessToken, selectedGraphId } = useAuth();
   const [mapData, setMapData] = useState<MapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,16 +70,35 @@ export default function GraphPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    fetchMapData()
-      .then((data) => {
+    let cancelled = false;
+
+    const loadMap = async () => {
+      setLoading(true);
+      setSelectedNode(null);
+      setError(null);
+      try {
+        const data = await fetchMapData({ graphId: selectedGraphId, accessToken });
+        if (cancelled) return;
         setMapData(data);
         const domains = [...new Set(data.nodes.map((node) => node.domain))].sort();
         setAllDomains(domains);
         setEnabledDomains(new Set(domains));
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+      } catch (caughtError) {
+        if (!cancelled) {
+          setError(caughtError instanceof Error ? caughtError.message : "Failed to load graph data");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadMap();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, selectedGraphId]);
 
   const toggleGroup = useCallback((domains: string[]) => {
     setEnabledDomains((prev) => {
@@ -173,6 +195,15 @@ export default function GraphPage() {
             </span>
           </span>
         </button>
+
+        <div className="graph-ui-panel rounded-full px-4 py-2.5">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-1">
+            Active Graph
+          </p>
+          <div className="text-sm font-medium text-text-primary">
+            {getGraphLabel(selectedGraphId)}
+          </div>
+        </div>
 
         <div className="graph-ui-panel rounded-full px-4 py-2.5">
           <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-1">

@@ -18,6 +18,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VITE_SEEVOMAP_HF_CLIENT_ID: ${{ secrets.VITE_SEEVOMAP_HF_CLIENT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +40,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Verify Pages auth assets
+        run: |
+          test -f dist/.well-known/oauth-cimd
+          test -f dist/.nojekyll
+          test -f dist/oauth/callback/huggingface/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

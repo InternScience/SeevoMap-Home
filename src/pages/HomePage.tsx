@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import StatsCounter from "../components/StatsCounter";
 import CodeBlock from "../components/CodeBlock";
 import HeroGraphField from "../components/HeroGraphField";
+import LeaderboardPreviewSection from "../components/LeaderboardPreviewSection";
 
 const FEATURES = [
   {
@@ -111,6 +112,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <LeaderboardPreviewSection />
 
       {/* ---- Features ------------------------------------ */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

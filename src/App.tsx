@@ -1,5 +1,6 @@
 import { HashRouter, Navigate, Routes, Route } from "react-router-dom";
 import { Suspense, lazy, useEffect, useState } from "react";
+import { AuthProvider } from "./auth/AuthContext";
 import Navbar from "./components/Navbar";
 import {
   getInitialTheme,
@@ -10,11 +11,14 @@ import {
 const HomePage = lazy(() => import("./pages/HomePage"));
 const GraphPage = lazy(() => import("./pages/GraphPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
+const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 const GuidePage = lazy(() => import("./pages/GuidePage"));
 const QuickstartPage = lazy(() => import("./pages/QuickstartPage"));
 const AutoresearchPage = lazy(() => import("./pages/AutoresearchPage"));
 const ParameterGolfPage = lazy(() => import("./pages/ParameterGolfPage"));
 const ReferencePage = lazy(() => import("./pages/ReferencePage"));
+const AuthCallbackPage = lazy(() => import("./pages/AuthCallbackPage"));
+const AccountPage = lazy(() => import("./pages/AccountPage"));
 
 function LoadingFallback() {
   return (
@@ -45,31 +49,36 @@ export default function App() {
 
   return (
     <HashRouter>
-      <div className="app-shell min-h-screen">
-        <Navbar
-          theme={theme}
-          onToggleTheme={() =>
-            setTheme((current) => (current === "dark" ? "light" : "dark"))
-          }
-        />
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/graph" element={<GraphPage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/guide" element={<Navigate to="/docs" replace />} />
-            <Route path="/docs" element={<GuidePage />} />
-            <Route path="/docs/quickstart" element={<QuickstartPage />} />
-            <Route path="/docs/integration" element={<AutoresearchPage />} />
-            <Route path="/docs/examples" element={<ParameterGolfPage />} />
-            <Route
-              path="/docs/parameter-golf"
-              element={<Navigate to="/docs/examples" replace />}
-            />
-            <Route path="/docs/reference" element={<ReferencePage />} />
-          </Routes>
-        </Suspense>
-      </div>
+      <AuthProvider>
+        <div className="app-shell min-h-screen">
+          <Navbar
+            theme={theme}
+            onToggleTheme={() =>
+              setTheme((current) => (current === "dark" ? "light" : "dark"))
+            }
+          />
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/graph" element={<GraphPage />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/account" element={<AccountPage />} />
+              <Route path="/guide" element={<Navigate to="/docs" replace />} />
+              <Route path="/docs" element={<GuidePage />} />
+              <Route path="/docs/quickstart" element={<QuickstartPage />} />
+              <Route path="/docs/integration" element={<AutoresearchPage />} />
+              <Route path="/docs/examples" element={<ParameterGolfPage />} />
+              <Route
+                path="/docs/parameter-golf"
+                element={<Navigate to="/docs/examples" replace />}
+              />
+              <Route path="/docs/reference" element={<ReferencePage />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </AuthProvider>
     </HashRouter>
   );
 }

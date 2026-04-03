@@ -30,6 +30,33 @@ Local preview convention:
 - Use `npm run dev:local` for frontend work.
 - The dev server is expected to run on port `3456` so changes can be checked
   immediately before any GitHub push.
+- For a production-like local check, run `npm run build` first and then serve
+  the built site locally with `npm run preview -- --host 0.0.0.0 --port 3456`.
+- The local site can point at a different backend by setting
+  `VITE_SEEVOMAP_SPACE_URL` before starting the dev server or preview server.
+- Website sign-in now defaults to the public SeevoMap CIMD client id at
+  `https://internscience.github.io/SeevoMap-Home/.well-known/oauth-cimd`.
+- `VITE_SEEVOMAP_HF_CLIENT_ID` is now only an optional override if you want to
+  point this deployment at a different Hugging Face OAuth app.
+
+Local sign-in setup:
+
+```bash
+cp .env.local.example .env.local
+```
+
+- Local dev can reuse the default SeevoMap public client id.
+- If you keep the default, use one of the already-registered callbacks:
+  - `http://127.0.0.1:3456/oauth/callback/huggingface/`
+  - `http://localhost:3456/oauth/callback/huggingface/`
+  - `http://127.0.0.1:3457/oauth/callback/huggingface/`
+  - `http://localhost:3457/oauth/callback/huggingface/`
+  - `http://127.0.0.1:3458/oauth/callback/huggingface/`
+  - `http://localhost:3458/oauth/callback/huggingface/`
+  - `http://127.0.0.1:3459/oauth/callback/huggingface/`
+  - `http://localhost:3459/oauth/callback/huggingface/`
+- If you want to point the site at a different OAuth app, set
+  `VITE_SEEVOMAP_HF_CLIENT_ID` in `.env.local`.
 
 ## Deploy
 
@@ -69,6 +96,7 @@ Notes:
 ```bash
 pip install seevomap
 seevomap search "optimize transformer pretraining" --top-k 10
+seevomap leaderboard --limit 10
 ```
 
 ```python
@@ -76,6 +104,10 @@ from seevomap import SeevoMap
 svm = SeevoMap()
 results = svm.search("my task", top_k=5)
 ```
+
+The static website now includes a public `/leaderboard` route backed by the
+Space API, plus a Search-page flow that creates inject sessions and allows
+optional session-bound `helpful / not helpful` feedback.
 
 ## Tech Stack
 

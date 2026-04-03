@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
+import { getGraphLabel } from "../config";
 import type { ThemeMode } from "../utils/theme";
+import GraphSelector from "./GraphSelector";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/graph", label: "Graph" },
   { to: "/search", label: "Market" },
+  { to: "/leaderboard", label: "Leaderboard" },
   { to: "/docs", label: "Docs" },
 ];
 
@@ -16,8 +20,20 @@ interface NavbarProps {
 
 export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
   const location = useLocation();
+  const {
+    canSignIn,
+    graphs,
+    isAuthenticated,
+    principal,
+    selectedGraphId,
+    setSelectedGraphId,
+    signInConfigurationMessage,
+    signIn,
+  } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const nextThemeLabel = theme === "dark" ? "Light" : "Dark";
+  const activePath = location.pathname || "/";
+  const canSwitchGraphs = graphs.length > 1;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -53,6 +69,35 @@ export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
                 </Link>
               );
             })}
+            {canSwitchGraphs ? (
+              <GraphSelector
+                graphs={graphs}
+                selectedGraphId={selectedGraphId}
+                onChange={setSelectedGraphId}
+              />
+            ) : (
+              <span className="hidden lg:inline-flex rounded-xl border border-border-subtle px-3 py-2 text-sm text-text-secondary">
+                {getGraphLabel(selectedGraphId)}
+              </span>
+            )}
+            {isAuthenticated ? (
+              <Link
+                to="/account"
+                className="relative px-4 py-2 text-sm font-medium rounded-xl text-text-secondary hover:text-text-primary surface-hover"
+              >
+                @{principal.hf_username || principal.user_id}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void signIn(activePath)}
+                disabled={!canSignIn}
+                title={canSignIn ? "Sign in with Hugging Face" : signInConfigurationMessage || "Sign-in is not configured on this deployment"}
+                className="relative px-4 py-2 text-sm font-medium rounded-xl text-text-secondary hover:text-text-primary surface-hover disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sign In
+              </button>
+            )}
             <button
               type="button"
               onClick={onToggleTheme}
@@ -113,6 +158,44 @@ export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
                 </Link>
               );
             })}
+            {canSwitchGraphs ? (
+              <div className="px-3 py-2">
+                <GraphSelector
+                  graphs={graphs}
+                  selectedGraphId={selectedGraphId}
+                  onChange={(graphId) => {
+                    setSelectedGraphId(graphId);
+                    setMobileOpen(false);
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="px-3 py-2 text-sm text-text-secondary">
+                {getGraphLabel(selectedGraphId)}
+              </div>
+            )}
+            {isAuthenticated ? (
+              <Link
+                to="/account"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary surface-hover"
+              >
+                @{principal.hf_username || principal.user_id}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  void signIn(activePath);
+                }}
+                disabled={!canSignIn}
+                title={canSignIn ? "Sign in with Hugging Face" : signInConfigurationMessage || "Sign-in is not configured on this deployment"}
+                className="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-text-primary surface-hover disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sign In
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
