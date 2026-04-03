@@ -44,6 +44,7 @@ jobs:
           test -f dist/.well-known/oauth-cimd
           test -f dist/.nojekyll
           test -f dist/oauth/callback/huggingface/index.html
+          test -f dist/generated/offline_quality_fixture.json
           rm -rf ../preview-site
           mkdir -p ../preview-site/preview/docs-autoresearch-preview
           cp -R dist/. ../preview-site/preview/docs-autoresearch-preview/
@@ -57,6 +58,7 @@ jobs:
           test -f dist/.well-known/oauth-cimd
           test -f dist/.nojekyll
           test -f dist/oauth/callback/huggingface/index.html
+          test -f dist/generated/offline_quality_fixture.json
           cp -R dist/. ../preview-site/
 
       - name: Add preview landing page

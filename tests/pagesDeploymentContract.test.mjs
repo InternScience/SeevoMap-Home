@@ -28,3 +28,13 @@ test("github pages source assets include .nojekyll so dotpaths are publishable",
 
   assert.ok(stat.isFile());
 });
+
+test("github pages deploy tracks the offline leaderboard fixture", () => {
+  const fixturePath = path.join(repoRoot, "public", "generated", "offline_quality_fixture.json");
+  const stat = statSync(fixturePath);
+  const payload = readFileSync(fixturePath, "utf8");
+
+  assert.ok(stat.isFile());
+  assert.ok(payload.includes('"model_leaderboard"'));
+  assert.ok(payload.includes('"node_leaderboard"'));
+});
