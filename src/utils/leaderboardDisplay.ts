@@ -48,6 +48,7 @@ export function formatModelDisplayName(model: string | null | undefined): string
   if (normalized === "deepseek-v3") return "DeepSeek V3";
   if (normalized === "gemini-2.5-pro") return "Gemini 2.5 Pro";
   if (normalized === "gemini-3.1-pro-preview") return "Gemini 3.1 Pro";
+  if (normalized === "grok-4") return "Grok 4";
   if (normalized === "qwen3.5-plus") return "Qwen 3.5 Plus";
   if (normalized === "minimax-m2.7") return "MiniMax M2.7";
   return value;
