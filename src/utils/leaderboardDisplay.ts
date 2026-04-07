@@ -42,8 +42,8 @@ export function formatModelDisplayName(model: string | null | undefined): string
   const normalized = value.toLowerCase();
   if (normalized === "gpt5") return "GPT-5";
   if (normalized === "gpt-5.4") return "GPT-5.4";
-  if (normalized === "claude_4_5_sonnet") return "Claude 4.5 Sonnet";
-  if (normalized === "claude_4_5_opus") return "Claude 4.5 Opus";
+  if (normalized === "claude_4_5_sonnet") return "Claude Sonnet 4.5";
+  if (normalized === "claude_4_5_opus") return "Claude Opus 4.5";
   if (normalized === "claude-opus-4-6") return "Claude Opus 4.6";
   if (normalized === "deepseek-v3") return "DeepSeek V3";
   if (normalized === "gemini-2.5-pro") return "Gemini 2.5 Pro";
