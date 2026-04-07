@@ -213,7 +213,7 @@ export default function LeaderboardPage() {
               <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-3">
                 Top Model Score
               </p>
-              <p className="text-2xl sm:text-3xl font-semibold text-text-primary mb-2">
+              <p className="text-2xl sm:text-3xl font-semibold text-text-primary mb-2 tabular-nums">
                 {totals.topModelScore.toFixed(2)}
               </p>
               <p className="text-sm text-text-secondary leading-relaxed">
@@ -235,7 +235,7 @@ export default function LeaderboardPage() {
               <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-3">
                 Top Node Score
               </p>
-              <p className="text-2xl sm:text-3xl font-semibold text-text-primary mb-2">
+              <p className="text-2xl sm:text-3xl font-semibold text-text-primary mb-2 tabular-nums">
                 {totals.topNodeScore.toFixed(2)}
               </p>
               <p className="text-sm text-text-secondary leading-relaxed">
@@ -498,7 +498,7 @@ function ModelLeaderboardTable({ rows }: { rows: ModelLeaderboardRow[] }) {
                     {formatModelDisplayName(row.generator_model)}
                   </div>
                 </td>
-                <td className="py-4 px-4 text-right font-bold text-cyan-light">
+                <td className="py-4 px-4 text-right font-bold text-cyan-light tabular-nums">
                   {formatScore(getPublicModelBoardScore(row))}
                 </td>
                 <td className="py-4 px-4">
@@ -593,7 +593,7 @@ function NodeLeaderboardTable(
                       </div>
                     )}
                   </td>
-                  <td className="py-4 px-4 text-right font-bold text-cyan-light">
+                  <td className="py-4 px-4 text-right font-bold text-cyan-light tabular-nums">
                     {formatScore(getPublicNodeBoardScore(row))}
                   </td>
                   <td className="py-4 px-4 text-right text-text-primary font-semibold">

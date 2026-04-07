@@ -122,18 +122,18 @@ export default function LeaderboardPreviewSection() {
                           {row.idea_count} ideas
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-right">
+                      <td className="py-4 px-4 text-right tabular-nums">
                         <span className="text-base font-bold text-cyan-light">
                           {formatScore(row.model_total_score)}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-right text-text-primary font-semibold">
+                      <td className="py-4 px-4 text-right text-text-primary font-semibold tabular-nums">
                         {formatScore(row.model_idea_gen_score)}
                       </td>
-                      <td className="py-4 px-4 text-right text-text-primary font-semibold">
+                      <td className="py-4 px-4 text-right text-text-primary font-semibold tabular-nums">
                         {row.scored_idea_count}
                       </td>
-                      <td className="py-4 px-4 text-right text-text-primary font-semibold">
+                      <td className="py-4 px-4 text-right text-text-primary font-semibold tabular-nums">
                         {row.score_confidence.toFixed(2)}
                       </td>
                     </tr>
