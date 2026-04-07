@@ -89,18 +89,28 @@ export interface UsageLeaderboardRow {
   last_used_at?: string | null;
 }
 
+export interface ScoreAdjustment {
+  target: string;
+  delta: number;
+  reason?: string | null;
+  scope?: string | null;
+}
+
 export interface ModelLeaderboardRow {
   generator_model: string;
   generator_family?: string | null;
   idea_count: number;
   scored_idea_count: number;
+  raw_model_total_score?: number | null;
   model_total_score: number | null;
+  raw_model_idea_gen_score?: number | null;
   model_idea_gen_score: number | null;
   model_execution_score: number | null;
   model_usage_score: number | null;
   score_confidence: number;
   top_node_ids: string[];
   last_generated_at?: string | null;
+  score_adjustments?: ScoreAdjustment[];
 }
 
 export interface NodeLeaderboardRow {
@@ -108,12 +118,15 @@ export interface NodeLeaderboardRow {
   question: string;
   generator_model?: string | null;
   field?: string | null;
+  raw_node_total_score?: number | null;
   node_total_score: number | null;
+  raw_node_agent_score?: number | null;
   node_agent_score: number | null;
   node_execution_score: number | null;
   node_usage_score: number | null;
   linked_seevomap_node_id?: string | null;
   detail_node_id?: string | null;
+  score_adjustments?: ScoreAdjustment[];
 }
 
 export type LeaderboardRow =

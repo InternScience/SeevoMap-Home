@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { getGraphLabel } from "../config";
 import {
+  formatModelDisplayName,
+  getLeaderboardCalibrationNotice,
   getPublicModelBoardScore,
   getPublicNodeBoardScore,
   MODEL_BOARD_PUBLIC_COLUMNS,
@@ -166,6 +168,10 @@ export default function LeaderboardPage() {
   }, [selectedGraphId]);
 
   const updatedAt = view === "model" ? modelUpdatedAt : nodeUpdatedAt;
+  const calibrationNotice = useMemo(
+    () => getLeaderboardCalibrationNotice(modelRows),
+    [modelRows],
+  );
 
   return (
     <div className="pt-16 min-h-screen overflow-hidden">
@@ -320,18 +326,32 @@ export default function LeaderboardPage() {
                 Score Contract
               </p>
               {view === "model" ? (
-                <p className="text-sm text-text-secondary leading-relaxed">
-                  Public V1 display shows one `Score` column only. In this first
-                  batch, that visible score is the required judged idea-quality
-                  signal, while optional execution and usage signals stay hidden
-                  until they materially exist.
-                </p>
+                <div className="space-y-3">
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    Public V1 display shows one `Score` column only. In this first
+                    batch, that visible score is the required judged idea-quality
+                    signal, while optional execution and usage signals stay hidden
+                    until they materially exist.
+                  </p>
+                  {calibrationNotice && (
+                    <p className="text-sm text-amber-700 leading-relaxed">
+                      {calibrationNotice}
+                    </p>
+                  )}
+                </div>
               ) : (
-                <p className="text-sm text-text-secondary leading-relaxed">
-                  Node rows also expose one visible `Score` only. Long titles are
-                  shortened in-table for readability, and the full node content is
-                  available from the detail drawer after opening the row.
-                </p>
+                <div className="space-y-3">
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    Node rows also expose one visible `Score` only. Long titles are
+                    shortened in-table for readability, and the full node content is
+                    available from the detail drawer after opening the row.
+                  </p>
+                  {calibrationNotice && (
+                    <p className="text-sm text-amber-700 leading-relaxed">
+                      {calibrationNotice}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
 
@@ -496,7 +516,7 @@ function ModelLeaderboardTable({ rows }: { rows: ModelLeaderboardRow[] }) {
                 </td>
                 <td className="py-4 px-4">
                   <div className="font-semibold text-text-primary">
-                    {row.generator_model}
+                    {formatModelDisplayName(row.generator_model)}
                   </div>
                 </td>
                 <td className="py-4 px-4 text-right font-bold text-cyan-light">
@@ -598,7 +618,7 @@ function NodeLeaderboardTable(
                     {formatScore(getPublicNodeBoardScore(row))}
                   </td>
                   <td className="py-4 px-4 text-right text-text-primary font-semibold">
-                    {row.generator_model || "unknown"}
+                    {formatModelDisplayName(row.generator_model)}
                   </td>
                 </tr>
               );

@@ -22,6 +22,35 @@ export function getPublicNodeBoardScore(row: NodeLeaderboardRow): number | null 
   return row.node_total_score;
 }
 
+export function getLeaderboardCalibrationNotice(
+  rows: ModelLeaderboardRow[],
+): string | null {
+  const calibratedRow = rows.find((row) => (row.score_adjustments || []).length > 0);
+  const adjustment = calibratedRow?.score_adjustments?.[0];
+  if (!calibratedRow || !adjustment) {
+    return null;
+  }
+  if (
+    calibratedRow.generator_model === "deepseek-v3"
+    && adjustment.target === "node_agent_score"
+    && adjustment.delta === -1.1
+  ) {
+    return "Current version applies a temporary -1.1 calibration to deepseek-v3 because of the server-side inference issue in this batch. Later refined versions should not inherit it.";
+  }
+  return null;
+}
+
+export function formatModelDisplayName(model: string | null | undefined): string {
+  const value = String(model || "").trim();
+  if (!value) return "unknown";
+
+  const normalized = value.toLowerCase();
+  if (normalized === "gpt5") return "gpt-5";
+  if (normalized === "claude_4_5_sonnet") return "claude-4.5-sonnet";
+  if (normalized === "claude_4_5_opus") return "claude-4.5-opus";
+  return value;
+}
+
 export function summarizeLeaderboardQuestion(question: string, maxLength = 140): string {
   const compact = String(question || "").replace(/\s+/g, " ").trim();
   if (!compact) return "Untitled node";

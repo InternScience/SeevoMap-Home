@@ -654,6 +654,7 @@ function normalizeModelLeaderboardRow(raw: unknown): ModelLeaderboardRow | null 
   }
 
   const rawTopNodeIds = Array.isArray(item.top_node_ids) ? item.top_node_ids : [];
+  const rawScoreAdjustments = Array.isArray(item.score_adjustments) ? item.score_adjustments : [];
 
   return {
     generator_model: item.generator_model,
@@ -667,12 +668,24 @@ function normalizeModelLeaderboardRow(raw: unknown): ModelLeaderboardRow | null 
       typeof item.scored_idea_count === "number"
         ? item.scored_idea_count
         : Number(item.scored_idea_count ?? 0),
+    raw_model_total_score:
+      typeof item.raw_model_total_score === "number"
+        ? item.raw_model_total_score
+        : item.raw_model_total_score == null
+          ? null
+          : Number(item.raw_model_total_score),
     model_total_score:
       typeof item.model_total_score === "number"
         ? item.model_total_score
         : item.model_total_score == null
           ? null
           : Number(item.model_total_score),
+    raw_model_idea_gen_score:
+      typeof item.raw_model_idea_gen_score === "number"
+        ? item.raw_model_idea_gen_score
+        : item.raw_model_idea_gen_score == null
+          ? null
+          : Number(item.raw_model_idea_gen_score),
     model_idea_gen_score:
       typeof item.model_idea_gen_score === "number"
         ? item.model_idea_gen_score
@@ -702,6 +715,26 @@ function normalizeModelLeaderboardRow(raw: unknown): ModelLeaderboardRow | null 
       typeof item.last_generated_at === "string" && item.last_generated_at.trim()
         ? item.last_generated_at
         : null,
+    score_adjustments: rawScoreAdjustments
+      .filter((value): value is Record<string, unknown> => Boolean(value && typeof value === "object"))
+      .map((value) => ({
+        target:
+          typeof value.target === "string" && value.target.trim()
+            ? value.target
+            : "node_agent_score",
+        delta:
+          typeof value.delta === "number"
+            ? value.delta
+            : Number(value.delta ?? 0),
+        reason:
+          typeof value.reason === "string" && value.reason.trim()
+            ? value.reason
+            : null,
+        scope:
+          typeof value.scope === "string" && value.scope.trim()
+            ? value.scope
+            : null,
+      })),
   };
 }
 
@@ -715,6 +748,7 @@ function normalizeNodeLeaderboardRow(raw: unknown): NodeLeaderboardRow | null {
       ? item.linked_seevomap_node_id
       : null;
   const detailNodeId = linkedNodeId || (!item.node_id.includes(":") ? item.node_id : null);
+  const rawScoreAdjustments = Array.isArray(item.score_adjustments) ? item.score_adjustments : [];
 
   return {
     node_id: item.node_id,
@@ -730,12 +764,24 @@ function normalizeNodeLeaderboardRow(raw: unknown): NodeLeaderboardRow | null {
       typeof item.field === "string" && item.field.trim()
         ? item.field
         : null,
+    raw_node_total_score:
+      typeof item.raw_node_total_score === "number"
+        ? item.raw_node_total_score
+        : item.raw_node_total_score == null
+          ? null
+          : Number(item.raw_node_total_score),
     node_total_score:
       typeof item.node_total_score === "number"
         ? item.node_total_score
         : item.node_total_score == null
           ? null
           : Number(item.node_total_score),
+    raw_node_agent_score:
+      typeof item.raw_node_agent_score === "number"
+        ? item.raw_node_agent_score
+        : item.raw_node_agent_score == null
+          ? null
+          : Number(item.raw_node_agent_score),
     node_agent_score:
       typeof item.node_agent_score === "number"
         ? item.node_agent_score
@@ -756,6 +802,26 @@ function normalizeNodeLeaderboardRow(raw: unknown): NodeLeaderboardRow | null {
           : Number(item.node_usage_score),
     linked_seevomap_node_id: linkedNodeId,
     detail_node_id: detailNodeId,
+    score_adjustments: rawScoreAdjustments
+      .filter((value): value is Record<string, unknown> => Boolean(value && typeof value === "object"))
+      .map((value) => ({
+        target:
+          typeof value.target === "string" && value.target.trim()
+            ? value.target
+            : "node_agent_score",
+        delta:
+          typeof value.delta === "number"
+            ? value.delta
+            : Number(value.delta ?? 0),
+        reason:
+          typeof value.reason === "string" && value.reason.trim()
+            ? value.reason
+            : null,
+        scope:
+          typeof value.scope === "string" && value.scope.trim()
+            ? value.scope
+            : null,
+      })),
   };
 }
 
