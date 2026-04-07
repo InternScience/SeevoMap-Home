@@ -23,21 +23,16 @@ export function getPublicNodeBoardScore(row: NodeLeaderboardRow): number | null 
 }
 
 export function getLeaderboardCalibrationNotice(
-  rows: ModelLeaderboardRow[],
+  _rows: ModelLeaderboardRow[],
 ): string | null {
-  const calibratedRow = rows.find((row) => (row.score_adjustments || []).length > 0);
-  const adjustment = calibratedRow?.score_adjustments?.[0];
-  if (!calibratedRow || !adjustment) {
-    return null;
-  }
-  if (
-    calibratedRow.generator_model === "deepseek-v3"
-    && adjustment.target === "node_agent_score"
-    && adjustment.delta === -1.1
-  ) {
-    return "Current version applies a temporary -1.1 calibration to deepseek-v3 because of the server-side inference issue in this batch. Later refined versions should not inherit it.";
-  }
   return null;
+}
+
+export function getPublicScoreContract(view: "model" | "node"): string {
+  if (view === "model") {
+    return "Score reflects judged idea quality and can be strengthened by execution evidence and community usage or feedback when those signals exist. Missing optional signals are not treated as penalties.";
+  }
+  return "Node score reflects judged idea quality first, with execution evidence and community usage or feedback available as supporting signals when present. Table titles are shortened for readability, while the full node stays available in detail view.";
 }
 
 export function formatModelDisplayName(model: string | null | undefined): string {

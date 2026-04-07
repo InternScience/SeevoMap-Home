@@ -4,6 +4,7 @@ import { getGraphLabel } from "../config";
 import {
   formatModelDisplayName,
   getLeaderboardCalibrationNotice,
+  getPublicScoreContract,
   getPublicModelBoardScore,
   getPublicNodeBoardScore,
   MODEL_BOARD_PUBLIC_COLUMNS,
@@ -168,10 +169,8 @@ export default function LeaderboardPage() {
   }, [selectedGraphId]);
 
   const updatedAt = view === "model" ? modelUpdatedAt : nodeUpdatedAt;
-  const calibrationNotice = useMemo(
-    () => getLeaderboardCalibrationNotice(modelRows),
-    [modelRows],
-  );
+  const calibrationNotice = useMemo(() => getLeaderboardCalibrationNotice(modelRows), [modelRows]);
+  const scoreContractText = useMemo(() => getPublicScoreContract(view), [view]);
 
   return (
     <div className="pt-16 min-h-screen overflow-hidden">
@@ -325,34 +324,14 @@ export default function LeaderboardPage() {
               <p className="text-text-muted text-xs uppercase tracking-[0.14em] mb-3">
                 Score Contract
               </p>
-              {view === "model" ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-text-secondary leading-relaxed">
-                    Public V1 display shows one `Score` column only. In this first
-                    batch, that visible score is the required judged idea-quality
-                    signal, while optional execution and usage signals stay hidden
-                    until they materially exist.
-                  </p>
-                  {calibrationNotice && (
-                    <p className="text-sm text-amber-700 leading-relaxed">
-                      {calibrationNotice}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-text-secondary leading-relaxed">
-                    Node rows also expose one visible `Score` only. Long titles are
-                    shortened in-table for readability, and the full node content is
-                    available from the detail drawer after opening the row.
-                  </p>
-                  {calibrationNotice && (
-                    <p className="text-sm text-amber-700 leading-relaxed">
-                      {calibrationNotice}
-                    </p>
-                  )}
-                </div>
-              )}
+              <div className="space-y-3">
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  {scoreContractText}
+                </p>
+                {calibrationNotice && (
+                  <p className="hidden">{calibrationNotice}</p>
+                )}
+              </div>
             </div>
 
             <div className="surface-card section-tone-sage rounded-3xl p-6">
