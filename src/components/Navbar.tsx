@@ -6,7 +6,6 @@ import type { ThemeMode } from "../utils/theme";
 import GraphSelector from "./GraphSelector";
 
 const NAV_LINKS = [
-  { to: "/", label: "Home" },
   { to: "/graph", label: "Graph" },
   { to: "/search", label: "Market" },
   { to: "/leaderboard", label: "Leaderboard" },
@@ -39,13 +38,6 @@ export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand */}
-          <Link to="/" className="flex items-center gap-1 text-xl font-bold tracking-tight">
-            <span className="text-text-primary">Se</span>
-            <span className="brand-evo">evo</span>
-            <span className="text-text-primary">Map</span>
-          </Link>
-
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-2">
             {NAV_LINKS.map((link) => {
