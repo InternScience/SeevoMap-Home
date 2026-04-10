@@ -47,6 +47,18 @@ export default function App() {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
+  // Listen for theme changes from parent SGIWorld
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'sgiworld-theme') {
+        const newTheme = event.data.theme as ThemeMode;
+        setTheme(newTheme);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   return (
     <HashRouter>
       <AuthProvider>
