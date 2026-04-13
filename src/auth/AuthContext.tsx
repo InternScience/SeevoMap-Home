@@ -156,7 +156,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
       return;
     }
     setError(null);
-    await startHfLogin(nextPath);
+    try {
+      await startHfLogin(nextPath);
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : "Failed to start sign-in";
+      setError(message);
+      if (typeof window !== "undefined") {
+        window.alert(message);
+      }
+    }
   }, [canSignIn, signInConfigurationMessage]);
 
   const completeSignIn = useCallback(async () => {

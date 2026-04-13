@@ -34,8 +34,11 @@ Local preview convention:
   the built site locally with `npm run preview -- --host 0.0.0.0 --port 3456`.
 - The local site can point at a different backend by setting
   `VITE_SEEVOMAP_SPACE_URL` before starting the dev server or preview server.
-- Website sign-in now defaults to the public SeevoMap CIMD client id at
-  `https://internscience.github.io/SeevoMap-Home/.well-known/oauth-cimd`.
+- Website sign-in now defaults to the public SeevoMap OAuth client metadata URL
+  at `https://internscience.github.io/SeevoMap-Home/oauth/client-metadata.json`.
+- This JSON path is used instead of the legacy extensionless CIMD path because
+  GitHub Pages serves `.well-known/oauth-cimd` as `application/octet-stream`,
+  which currently breaks Hugging Face's metadata fetch during sign-in.
 - `VITE_SEEVOMAP_HF_CLIENT_ID` is now only an optional override if you want to
   point this deployment at a different Hugging Face OAuth app.
 
@@ -57,6 +60,10 @@ cp .env.local.example .env.local
   - `http://localhost:3459/oauth/callback/huggingface/`
 - If you want to point the site at a different OAuth app, set
   `VITE_SEEVOMAP_HF_CLIENT_ID` in `.env.local`.
+- If the public metadata URL has not been deployed to GitHub Pages yet, local
+  sign-in will be blocked with a direct error message instead of bouncing to a
+  Hugging Face 502 page. In that case, either deploy first or set an explicit
+  `VITE_SEEVOMAP_HF_CLIENT_ID`.
 
 ## Deploy
 

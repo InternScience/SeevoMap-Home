@@ -8,11 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
 
-test("github pages source assets include the CIMD document", () => {
-  const cimdPath = path.join(repoRoot, "public", ".well-known", "oauth-cimd");
-  const payload = readFileSync(cimdPath, "utf8");
+test("github pages source assets include the OAuth client metadata document", () => {
+  const metadataPath = path.join(repoRoot, "public", "oauth", "client-metadata.json");
+  const payload = readFileSync(metadataPath, "utf8");
 
-  assert.ok(payload.includes('"client_id": "https://internscience.github.io/SeevoMap-Home/.well-known/oauth-cimd"'));
+  assert.ok(payload.includes('"client_id": "https://internscience.github.io/SeevoMap-Home/oauth/client-metadata.json"'));
   assert.ok(payload.includes('"https://internscience.github.io/SeevoMap-Home/oauth/callback/huggingface/"'));
   assert.ok(payload.includes('"http://127.0.0.1:3457/oauth/callback/huggingface/"'));
   assert.ok(payload.includes('"http://127.0.0.1:3458/oauth/callback/huggingface/"'));

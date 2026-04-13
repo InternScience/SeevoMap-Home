@@ -5,6 +5,7 @@ import {
 } from "../config";
 import {
   APP_AUTH_CALLBACK_HASH_ROUTE,
+  assertWebsiteSignInReady,
   buildOAuthRedirectUri,
   extractOAuthCallbackParams,
   isWebsiteSignInConfigured,
@@ -49,9 +50,10 @@ export async function startHfLogin(nextPath = currentAppPath()): Promise<void> {
   if (!isWebsiteSignInConfigured(HF_OAUTH_CLIENT_ID)) {
     throw new Error(
       "Website sign-in is unavailable because no Hugging Face OAuth client id could be resolved. " +
-        "Use the default CIMD client id or provide VITE_SEEVOMAP_HF_CLIENT_ID as an override.",
+        "Use the default OAuth client metadata URL or provide VITE_SEEVOMAP_HF_CLIENT_ID as an override.",
     );
   }
+  await assertWebsiteSignInReady(HF_OAUTH_CLIENT_ID);
 
   const state = randomString(32);
   const verifier = randomString(64);
