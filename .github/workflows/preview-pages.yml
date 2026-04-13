@@ -55,7 +55,10 @@ jobs:
           cd ../main-site
           npm ci
           npm run build
-          test -f dist/oauth/client-metadata.json
+          if [ ! -f dist/oauth/client-metadata.json ] && [ ! -f dist/.well-known/oauth-cimd ]; then
+            echo "Expected either dist/oauth/client-metadata.json or dist/.well-known/oauth-cimd in the root-site build"
+            exit 1
+          fi
           test -f dist/.nojekyll
           test -f dist/oauth/callback/huggingface/index.html
           test -f dist/generated/offline_quality_fixture.json
