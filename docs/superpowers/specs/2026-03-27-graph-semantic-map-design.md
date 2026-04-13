@@ -246,7 +246,7 @@ This keeps the graph stable without inventing obviously wrong extremes.
 ### Functional Checks
 
 1. `npm run build` must pass.
-2. Local preview must render `/#/graph` without runtime errors.
+2. Local preview must render `/#/map` without runtime errors.
 3. Dragging outside the stage must not pan the graph.
 4. Dragging inside the stage must pan the graph.
 5. Zoom must stay centered on the semantic stage and preserve graph readability.

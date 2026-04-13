@@ -190,7 +190,7 @@ export default function LeaderboardPage() {
               Usage stays visible as optional evidence, not the definition of quality.
             </p>
             <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-border-subtle px-4 py-2 text-sm text-text-secondary">
-              <span className="text-text-muted">Active graph</span>
+              <span className="text-text-muted">Active map</span>
               <span className="font-semibold text-text-primary">
                 {getGraphLabel(selectedGraphId)}
               </span>

@@ -6,15 +6,15 @@ import LeaderboardPreviewSection from "../components/LeaderboardPreviewSection";
 
 const FEATURES = [
   {
-    title: "Explore the Graph",
-    desc: "Navigate a living knowledge graph of 3,073 AI research execution records across pretraining, post-training, and compression domains.",
+    title: "Explore the Map",
+    desc: "Navigate a living research map of 3,073 AI research execution records across pretraining, post-training, and compression domains.",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
       </svg>
     ),
-    link: "/graph",
-    linkText: "Open Graph Explorer",
+    link: "/map",
+    linkText: "Open Map Explorer",
     toneClass: "section-tone-sky",
   },
   {
@@ -47,7 +47,7 @@ const STEPS = [
   {
     num: "01",
     title: "Search Before You Build",
-    desc: "Query the graph with your task description. SeevoMap finds semantically similar experiments from 3,000+ records.",
+    desc: "Query the map with your task description. SeevoMap finds semantically similar experiments from 3,000+ records.",
   },
   {
     num: "02",
@@ -62,7 +62,7 @@ const STEPS = [
   {
     num: "04",
     title: "Submit Results Back",
-    desc: "Push your execution record to the graph. The next researcher starts from a higher baseline.",
+    desc: "Push your execution record to the map. The next researcher starts from a higher baseline.",
   },
 ];
 
@@ -98,10 +98,10 @@ export default function HomePage() {
 
           <div className="animate-slide-up delay-400 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to="/graph"
+              to="/map"
               className="theme-primary-button px-6 py-3 font-medium rounded-xl transition-colors duration-200 text-sm"
             >
-              Explore the Graph
+              Explore the Map
             </Link>
             <Link
               to="/docs"
@@ -172,7 +172,7 @@ export default function HomePage() {
       <footer className="border-t border-border-subtle py-10">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <p className="text-text-muted text-sm">
-            SeevoMap &mdash; Open-source AI research knowledge graph.
+            SeevoMap &mdash; Open-source AI research map.
             Built by the community, for the community.
           </p>
         </div>

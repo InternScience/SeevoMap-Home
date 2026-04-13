@@ -83,7 +83,7 @@
 
 - [ ] Run `npm run build`.
 - [ ] Restart `npm run dev:local`.
-- [ ] Verify locally on `/#/graph`:
+- [ ] Verify locally on `/#/map`:
   - only the stage area is draggable
   - the graph fills the stage more tightly
   - the x-axis shows both macro/micro direction and 9 public domains

@@ -88,7 +88,7 @@ export default function AccountPage() {
                   </div>
                   <div className="surface-note rounded-2xl p-4">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-2">
-                      Active graph
+                      Active map
                     </p>
                     <p className="text-lg font-semibold text-text-primary">
                       {getGraphLabel(selectedGraph.graph_id)}
@@ -106,7 +106,7 @@ export default function AccountPage() {
             ) : (
               <div className="space-y-4">
                 <p className="text-text-secondary text-sm leading-relaxed">
-                  You are browsing anonymously. Public graph routes stay open by
+                  You are browsing anonymously. Public map routes stay open by
                   default, and signing in only adds account state plus access
                   upgrade paths.
                 </p>
@@ -157,7 +157,7 @@ export default function AccountPage() {
           </p>
           {principal.role === "lab" || principal.role === "maintainer" ? (
             <p className="text-text-secondary text-sm leading-relaxed">
-              Your role already includes {getGraphLabel("lab")}. Use the graph
+              Your role already includes {getGraphLabel("lab")}. Use the map
               selector in the navbar to switch views explicitly.
             </p>
           ) : pendingRequest ? (

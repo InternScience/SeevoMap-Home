@@ -15,7 +15,7 @@ export default function GraphSelector({
   return (
     <label className="flex items-center gap-2 rounded-xl border border-border-subtle px-3 py-2 text-sm text-text-secondary">
       <span className="text-[11px] uppercase tracking-[0.14em] text-text-muted">
-        Graph
+        Map
       </span>
       <select
         value={selectedGraphId}

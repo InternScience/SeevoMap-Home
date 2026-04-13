@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { getGraphLabel } from "../config";
 import type { ThemeMode } from "../utils/theme";
 import GraphSelector from "./GraphSelector";
 
 const NAV_LINKS = [
-  { to: "/graph", label: "Graph" },
+  { to: "/map", label: "Map" },
   { to: "/search", label: "Market" },
   { to: "/leaderboard", label: "Leaderboard" },
   { to: "/docs", label: "Docs" },
@@ -61,16 +60,12 @@ export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
                 </Link>
               );
             })}
-            {canSwitchGraphs ? (
+            {canSwitchGraphs && (
               <GraphSelector
                 graphs={graphs}
                 selectedGraphId={selectedGraphId}
                 onChange={setSelectedGraphId}
               />
-            ) : (
-              <span className="hidden lg:inline-flex rounded-xl border border-border-subtle px-3 py-2 text-sm text-text-secondary">
-                {getGraphLabel(selectedGraphId)}
-              </span>
             )}
             {isAuthenticated ? (
               <Link
@@ -150,7 +145,7 @@ export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
                 </Link>
               );
             })}
-            {canSwitchGraphs ? (
+            {canSwitchGraphs && (
               <div className="px-3 py-2">
                 <GraphSelector
                   graphs={graphs}
@@ -160,10 +155,6 @@ export default function Navbar({ theme, onToggleTheme }: NavbarProps) {
                     setMobileOpen(false);
                   }}
                 />
-              </div>
-            ) : (
-              <div className="px-3 py-2 text-sm text-text-secondary">
-                {getGraphLabel(selectedGraphId)}
               </div>
             )}
             {isAuthenticated ? (

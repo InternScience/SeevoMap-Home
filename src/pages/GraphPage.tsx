@@ -85,7 +85,7 @@ export default function GraphPage() {
         setEnabledDomains(new Set(domains));
       } catch (caughtError) {
         if (!cancelled) {
-          setError(caughtError instanceof Error ? caughtError.message : "Failed to load graph data");
+          setError(caughtError instanceof Error ? caughtError.message : "Failed to load map data");
         }
       } finally {
         if (!cancelled) {
@@ -121,7 +121,7 @@ export default function GraphPage() {
       <div className="pt-16 flex items-center justify-center min-h-screen bg-bg-primary">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-2 border-emerald-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-text-secondary text-sm">Loading graph data...</p>
+          <p className="text-text-secondary text-sm">Loading map data...</p>
         </div>
       </div>
     );
@@ -131,7 +131,7 @@ export default function GraphPage() {
     return (
       <div className="pt-16 flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-red-400 mb-2">Failed to load graph data</p>
+          <p className="text-red-400 mb-2">Failed to load map data</p>
           <p className="text-text-muted text-sm">{error}</p>
         </div>
       </div>
@@ -198,7 +198,7 @@ export default function GraphPage() {
 
         <div className="graph-ui-panel rounded-full px-4 py-2.5">
           <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-1">
-            Active Graph
+            Active Map
           </p>
           <div className="text-sm font-medium text-text-primary">
             {getGraphLabel(selectedGraphId)}
@@ -234,10 +234,10 @@ export default function GraphPage() {
                   Domain Drawer
                 </p>
                 <h2 className="text-xl font-semibold text-text-primary mb-2">
-                  Shape the graph view
+                  Shape the map view
                 </h2>
                 <p className="text-sm text-text-secondary leading-relaxed">
-                  Toggle domains to filter the graph. X-axis shows research scale (Universe→Quantum), Y-axis shows contribution type (Clinical→Theory).
+                  Toggle domains to filter the map. X-axis shows research scale (Universe→Quantum), Y-axis shows contribution type (Clinical→Theory).
                 </p>
               </div>
               <button

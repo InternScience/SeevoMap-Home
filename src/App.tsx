@@ -72,7 +72,8 @@ export default function App() {
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/graph" element={<GraphPage />} />
+              <Route path="/map" element={<GraphPage />} />
+              <Route path="/graph" element={<Navigate to="/map" replace />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/leaderboard" element={<LeaderboardPage />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
