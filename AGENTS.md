@@ -21,17 +21,18 @@ pick up immediately.
 - `main` is the production branch.
 - Pushing `main` triggers [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)
   and deploys the production GitHub Pages site.
-- `docs-autoresearch-preview` is a preview branch.
-- Pushing `docs-autoresearch-preview` triggers
-  [`.github/workflows/preview-pages.yml`](./.github/workflows/preview-pages.yml),
-  which publishes a preview build under the Pages preview subpath while keeping
-  the root site aligned with `main`.
+- `docs-autoresearch-preview` remains the preview branch name, but its Pages
+  workflow is currently manual-only.
+- [`.github/workflows/preview-pages.yml`](./.github/workflows/preview-pages.yml)
+  can still publish a preview build under the Pages preview subpath while
+  keeping the root site aligned with `main`, but someone must trigger it
+  explicitly from the Actions UI.
 
 ## Practical rule
 
-- The normal order is: edit locally -> test locally -> push preview branch if
-  needed -> review -> merge or port to `main` -> let GitHub Pages deploy
-  production.
+- The normal order is: edit locally -> test locally -> if a preview is needed,
+  trigger the preview workflow manually -> review -> merge or port to `main` ->
+  let GitHub Pages deploy production.
 - Uncommitted local changes are not deployed.
 - A commit sitting only on `docs-autoresearch-preview` is not the same thing as
   production deployment.

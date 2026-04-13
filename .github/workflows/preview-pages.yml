@@ -1,9 +1,6 @@
 name: Deploy Preview Pages
 
 on:
-  push:
-    branches:
-      - docs-autoresearch-preview
   workflow_dispatch:
 
 permissions:

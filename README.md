@@ -81,7 +81,7 @@ This repo is configured for GitHub Pages deployment:
 
 1. Make and test changes locally first
 2. Run `npm run build` before claiming the site is ready
-3. Push `docs-autoresearch-preview` if you want a preview deployment
+3. Trigger the preview workflow manually if you want a preview deployment
 4. Push or merge to `main` when you want the production site updated
 5. In GitHub repo settings, set `Pages` source to `GitHub Actions`
 
@@ -93,8 +93,8 @@ Notes:
   before treating the change as ready.
 - Production deploys are triggered by `.github/workflows/deploy-pages.yml` on
   pushes to `main`.
-- Preview deploys are triggered by `.github/workflows/preview-pages.yml` on
-  pushes to `docs-autoresearch-preview`.
+- Preview deploys are currently manual-only through
+  `.github/workflows/preview-pages.yml`.
 - The intended workflow is local preview first, GitHub preview second,
   production deploy last.
 
